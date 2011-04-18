@@ -34,7 +34,10 @@ function d = getPenumbraDescriptor(im, mask, pixel, n_angles, length)
         % ensure that the profile is rising (reverse points if it's not)
         [d.points(slice, 1, :) d.points(slice, 2, :)] = ensureProfileRising(mask, d.points(slice, 1, :), d.points(slice, 2, :));
         
-        % remove parts outside of penumbra (gradient = 0)
+        % extend the slice all the way to the edges of penumbra
+%         [d.points(slice, 1, :) d.points(slice, 2, :)] = extendSlice(mask, d.points(slice, 1, :), d.points(slice, 2, :));
+        
+        % remove parts outside of penumbra (where gradient = 0)
         [d.points(slice, 1, :), ...
          d.points(slice, 2, :)] = removeZeroGradient(mask, ...
                                                      d.points(slice, 1, :), ...
@@ -48,6 +51,10 @@ end
 function [p1, p2] = extendSlice(im, p1, p2)
 % extends the slice to ensure that 0-gradient is reached on both ends
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
+    g = gradient(c);
+    while g(1) > 0
+        p1 = p1 + (p2-p1)*0.01;
+    end
 end
 
 function [p1,p2] = removeZeroGradient(im, p1, p2)
@@ -55,8 +62,11 @@ function [p1,p2] = removeZeroGradient(im, p1, p2)
 % TODO: should probably blur first
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     g = gradient(c);
-    fnz = find(g > 0, 1);   % first non-zero gradient
-    lnz = size(g,1) - find(flipud(g) > 0, 1); % last non-zero gradient
+    % convolve with a Gaussian kernel with sigma 5
+    g = conv(g, normpdf(1:size(g,1), round(size(g,1)/2), 5), 'same');
+    thresh = 10^-5; % a small number defining penumbra cut-off
+    fnz = find(g > thresh, 1);   % first non-zero gradient
+    lnz = size(g,1) - find(flipud(g) > thresh, 1); % last non-zero gradient
     cx = cx(fnz:lnz);
     cy = cy(fnz:lnz);
     p1 = [cx(1) cy(2)];
