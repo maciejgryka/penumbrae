@@ -35,7 +35,8 @@ function d = getPenumbraDescriptor(im, mask, pixel, n_angles, length)
         [d.points(slice, 1, :) d.points(slice, 2, :)] = ensureProfileRising(mask, d.points(slice, 1, :), d.points(slice, 2, :));
         
         % extend the slice all the way to the edges of penumbra
-%         [d.points(slice, 1, :) d.points(slice, 2, :)] = extendSlice(mask, d.points(slice, 1, :), d.points(slice, 2, :));
+        [d.points(slice, 1, :) d.points(slice, 2, :)] = extendSlice(mask, d.points(slice, 1, :), d.points(slice, 2, :));
+%         [d.points(slice, 2, :) d.points(slice, 1, :)] = extendSlice(mask, d.points(slice, 2, :), d.points(slice, 1, :));
         
         % remove parts outside of penumbra (where gradient = 0)
         [d.points(slice, 1, :), ...
@@ -50,16 +51,27 @@ end
 
 function [p1, p2] = extendSlice(im, p1, p2)
 % extends the slice to ensure that 0-gradient is reached on both ends
-    [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
+    c = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     g = gradient(c);
-    while g(1) > 0
-        p1 = p1 + (p2-p1)*0.01;
+    % convolve with a Gaussian kernel with sigma 5
+    g = conv(g, normpdf(1:size(g,1), round(size(g,1)/2), 5), 'same');
+    thresh = 10^-5; % a small number defining penumbra cut-off
+    offset = (p2(:) - p1(:))*0.01;
+    while g(1) > thresh && ~isOut(p1, im)
+        np1 = p1(:) - offset;
+        if isOut(np1, im)
+            break
+        end
+        p1(1) = np1(1); p1(2) = np1(2);
+        c = improfile(im, round([p1(1) p2(1)]), [p1(2) p2(2)]);
+        g = gradient(c);
+        g = conv(g, normpdf(1:size(g,1), round(size(g,1)/2), 5), 'same');
     end
+    p1 = round(p1);
 end
 
 function [p1,p2] = removeZeroGradient(im, p1, p2)
 % returns endpoints of the profile, which doesn't include 0-gradient
-% TODO: should probably blur first
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     g = gradient(c);
     % convolve with a Gaussian kernel with sigma 5
@@ -87,4 +99,13 @@ function [p1, p2] = getSliceWinthinImage(im, p1, p2)
     vp = [cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)];
     p1 = vp(1,:);
     p2 = vp(size(vp,1),:);
+end
+
+function out = isOut(p, im)
+    if p(1) < 1 || p(1) > size(im,2) || ...
+       p(2) < 1 || p(2) > size(im,1)
+        out = true;
+    else
+        out = false;
+    end
 end
