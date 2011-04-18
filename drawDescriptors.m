@@ -1,4 +1,5 @@
 function drawDescriptors()
+    close
     im = imread('C:\Work\research\shadow_removal\penumbrae\images\2011-04-18\2011-04-14_rough1_shadow.tif');
     noshad = imread('C:\Work\research\shadow_removal\penumbrae\images\2011-04-18\2011-04-14_rough1_noshad.tif');
     
@@ -13,7 +14,7 @@ function drawDescriptors()
     
     mask = im ./ noshad;
     
-    n_angles = 3;
+    n_angles = 10;
     length = 100;
     
     n_descrs = 1;
@@ -22,6 +23,8 @@ function drawDescriptors()
     [dx dy] = gradient(mask);
     mask_abs_grad = abs(dx) + abs(dy);
     penumbra_mask = mask_abs_grad > 0;
+    
+    global pixel;
     
     for n = 1:n_descrs
         pixel = getRandomImagePoint(mask);
@@ -69,7 +72,7 @@ function drawDescriptors()
     subplot(1,2,1);
     imshow(mask);
     hold on;
-    plot(pixel(1), pixel(2), 'xr');
+    plot(pixel(1), pixel(2), 'or', 'MarkerSize', 5);
     for s = 1:slice
         plot(descrs{n}.points(s, :, 1), descrs{n}.points(s, :, 2), 'color', cols(s, :));
     end
