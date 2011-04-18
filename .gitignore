@@ -1,0 +1,28 @@
+# Images #
+*.jpg
+*.png
+*.gif
+*.tif
+*.tiff
+*.iff
+
+# Matlab #
+*.mat
+*.asv
+
+# Maya #
+*.mb
+*.ma
+*.mel
+*.swatch
+*.swatches
+*.precomp
+
+.mayaSwatches/
+assets/
+autosave/
+images/
+renderData/
+scenes/
+textures/
+tmp/
