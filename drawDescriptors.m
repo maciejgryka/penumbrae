@@ -32,7 +32,7 @@ function drawDescriptors()
             pixel = getRandomImagePoint(mask);
         end
 
-        descrs{n} = getPenumbraDescriptor(im, mask, pixel, n_angles, length);
+        descrs{n} = PenumbraDescriptor(im, mask, pixel, n_angles, length);
 
         cols = rand(n_angles, 3);
         cols(1,:) = [1 0 0];
