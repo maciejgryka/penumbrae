@@ -25,14 +25,14 @@ function d = getPenumbraDescriptor(im, mask, pixel, n_angles, length)
         slice = slice+1;
         [pixel_offset(1) pixel_offset(2)] = polar2cartesian(hl, d.orientation+ang);
 
-        [d.points(slice, 1, :) d.points(slice, 2, :)] = processSlice(mask, pixel + pixel_offset,  pixel - pixel_offset);
+        [d.points(slice, 1, :) d.points(slice, 2, :)] = processSlice(mask, pixel, pixel + pixel_offset,  pixel - pixel_offset);
         
         d.slices_mask{slice} = improfile(mask, d.points(slice, :, 1), d.points(slice, :, 2));
         d.slices_im{slice} = improfile(im, d.points(slice, :, 1), d.points(slice, :, 2));
     end
 end
 
-function [p1, p2] = processSlice(im, p1, p2)
+function [p1, p2] = processSlice(im, pixel, p1, p2)
     % check if the slice is within image
     [p1, p2] = getSliceWithinImage(im, p1, p2);
     
@@ -40,7 +40,11 @@ function [p1, p2] = processSlice(im, p1, p2)
     [p1, p2] = ensureProfileRising(im, p1, p2);
     
     % extend the slice all the way to the edges of penumbra
-    [p1, p2] = extendSlice(im, p1, p2);
+    [p1, p2] = extendSlice(im, pixel, p1, p2);
+    
+    if isempty(p1) || isempty(p2)
+        error('p1 or p2 empty');
+    end
 end
 
 function [p1, p2] = getSliceWithinImage(im, p1, p2)
@@ -71,7 +75,7 @@ function [p1 p2] = ensureProfileRising(im, p1, p2)
     end
 end
 
-function [p1, p2] = extendSlice(im, p1, p2)
+function [p1, p2] = extendSlice(im, pixel, p1, p2)
 % extends the slice to ensure that 0-gradient is reached on both ends
     offset = (p2(:) - p1(:))*10;
     p1 = p1(:) - offset;
@@ -85,10 +89,29 @@ function [p1, p2] = extendSlice(im, p1, p2)
     thresh = 10^-5;
     
     % TODO: change to be robust to other peaks, max sux
-    profileMid = find(g == max(g),1); % index of the profile midpoint
+    % changed, but not enitrely validated - seems to work for now
+%     profileMid = find(g == max(g),1); % index of the profile midpoint
+    profileMid = find(round(cx) == pixel(1), 1);
     
-    fnz = find(g(1:profileMid) > thresh, 1); % index of the first element inside penumbra (gradient larger than thresh)
-    lnz = size(g,1) - find(flipud(g(profileMid:size(g,1))) > thresh, 1); % index of the last interesting element (inside penumbra)
+    if isempty(profileMid)
+        error('profileMid not found');
+    end
+    
+    fnz = [];
+    lnz = [];
+    
+    % this is some primitive error checking - if fnz is not found in the
+    % first segment of g, increase the segment
+    while isempty(fnz)
+        fnz = find(g(1:profileMid) > thresh, 1); % index of the first element inside penumbra (gradient larger than thresh)
+        lnz = size(g,1) - find(flipud(g(profileMid:size(g,1))) > thresh, 1); % index of the last interesting element (inside penumbra)
+        profileMid = profileMid + 1;
+    end
+    
+    if isempty(fnz) || isempty(lnz)
+        error('fnz or lnz not found');
+    end
+
     
     p1 = [cx(fnz) cy(fnz)];
     p2 = [cx(lnz) cy(lnz)];
