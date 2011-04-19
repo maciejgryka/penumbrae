@@ -81,7 +81,7 @@ function drawDescriptors()
     subplot(1,2,2);
     hold on;
     for s = 1:slice
-%         plot(gradient(descrs{n}.slices_mask{s}), 'color', cols(s, :));
+%         plot(descrs{n}.slices_mask{s}, 'color', cols(s, :));
         g = gradient(descrs{n}.slices_mask{s});
         plot(conv(g, normpdf(1:size(g,1), round(size(g,1)/2), 5), 'same'), 'color', cols(s, :));
     end

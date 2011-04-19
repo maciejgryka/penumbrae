@@ -20,7 +20,7 @@ function d = getPenumbraDescriptor(im, mask, pixel, n_angles, length)
     d.points = zeros(n_angles, 2, 2);
 
     slice = 0;
-    
+
     for ang = 0:ang_step:pi-ang_step
         slice = slice+1;
         [pixel_offset(1) pixel_offset(2)] = polar2cartesian(hl, d.orientation+ang);
@@ -87,17 +87,9 @@ function [p1, p2] = extendSlice(im, p1, p2)
     % TODO: change to be robust to other peaks, max sux
     profileMid = find(g == max(g),1); % index of the profile midpoint
     
-    fnz = findFirstNonZero(g(1:profileMid), thresh); % index of the first interesting element (inside penumbra)
-    lnz = size(g,1) - findFirstNonZero(flipud(g(profileMid:size(g,1))), thresh); % index of the last interesting element (inside penumbra)
+    fnz = find(g(1:profileMid) > thresh, 1); % index of the first element inside penumbra (gradient larger than thresh)
+    lnz = size(g,1) - find(flipud(g(profileMid:size(g,1))) > thresh, 1); % index of the last interesting element (inside penumbra)
     
     p1 = [cx(fnz) cy(fnz)];
     p2 = [cx(lnz) cy(lnz)];
-end
-
-function fnz = findFirstNonZero(vec, thresh)
-% finds first non-zero element (or larger than THRESH if defined)
-    if nargin == 1
-        thresh = 0;
-    end
-    fnz = find(vec > thresh, 1);
 end
