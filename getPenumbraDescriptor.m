@@ -138,6 +138,16 @@ function [p1, p2] = getSliceWinthinImage(im, p1, p2)
     p2 = vp(size(vp,1),:);
 end
 
+function [p1 p2] = ensureProfileRising(im, p1, p2)
+   prof = improfile(im, [p1(1) p2(1)] , [p1(2) p2(2)]);
+    if prof(1) > prof(size(prof,1))
+        prof = flipud(prof);
+        temp = p1;
+        p1 = p2;
+        p2 = temp;
+    end
+end
+
 % function out = isOut(p, im)
 %     if p(1) < 1 || p(1) > size(im,2) || ...
 %        p(2) < 1 || p(2) > size(im,1)
