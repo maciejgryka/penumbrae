@@ -1,43 +1,55 @@
 classdef PenumbraDescriptor
     properties
-        centre
+        center
         orientation
-        slices_mask
-        slices_im
+        slices_matte
+        slices_shad
         points
     end
     
     methods
-        function d = PenumbraDescriptor(im, mask, pixel, n_angles, length)
+        function d = PenumbraDescriptor(shad, pixel, n_angles, length, penumbra_mask, matte)
         %PENUMBRADESCRIPTOR returns descriptor at PIXEL
 
+            % storage for slices and points
+            d.center = pixel;
+            d.points = zeros(n_angles, 2, 2);
+            d.slices_shad = cell(n_angles);
+            
+            % dsim is the image according to which the descriptor is
+            % constructed (orientation and penumbra boundaries are taken
+            % from it); we want to use ground-truth matte at training
+            dsim = [];
+            
+            if exist('matte', 'var') && ~isempty(matte)
+                d.slices_matte = cell(n_angles);
+                dsim = matte;
+            else
+                dsim = shad;
+            end
+            
             hl = length/2; % half length
 
             bounds = [pixel(1)-hl; pixel(2)-hl; pixel(1)+hl; pixel(2)+hl];
-            bounds(1:2) = checkImBounds(bounds(1:2), size(mask));
-            bounds(3:4) = checkImBounds(bounds(3:4), size(mask));
+            bounds(1:2) = checkImBounds(bounds(1:2), size(dsim));
+            bounds(3:4) = checkImBounds(bounds(3:4), size(dsim));
 
-            patch = mask(bounds(2):bounds(4), bounds(1):bounds(3));
+            patch = dsim(bounds(2):bounds(4), bounds(1):bounds(3));
             d.orientation = dominantGradientDir(patch);
 
             ang_step = pi/n_angles;
-
-            % storage for slices and points
-            d.centre = pixel;
-            d.slices_mask = cell(n_angles);
-            d.slices_im = cell(n_angles);
-            d.points = zeros(n_angles, 2, 2);
-
             slice = 0;
 
             for ang = 0:ang_step:pi-ang_step
                 slice = slice+1;
                 [pixel_offset(1) pixel_offset(2)] = polar2cartesian(hl, d.orientation+ang);
 
-                [d.points(slice, 1, :) d.points(slice, 2, :)] = processSlice(mask, pixel, pixel + pixel_offset,  pixel - pixel_offset);
+                [d.points(slice, 1, :) d.points(slice, 2, :)] = processSlice(dsim, pixel, pixel + pixel_offset,  pixel - pixel_offset);
 
-                d.slices_mask{slice} = improfile(mask, d.points(slice, :, 1), d.points(slice, :, 2));
-                d.slices_im{slice} = improfile(im, d.points(slice, :, 1), d.points(slice, :, 2));
+                d.slices_shad{slice} = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
+                if exist('matte', 'var')
+                    d.slices_matte{slice} = improfile(matte, d.points(slice, :, 1), d.points(slice, :, 2));
+                end
             end
         end
     end
