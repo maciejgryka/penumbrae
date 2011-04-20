@@ -9,7 +9,7 @@ function saveDescriptors(shad, noshad)
     
     matte = shad ./ noshad;
     
-    n_angles = 1;
+    n_angles = 10;
     length = 100;
     
     n_descrs = 500;
@@ -25,8 +25,8 @@ function saveDescriptors(shad, noshad)
             pixel = getRandomImagePoint(matte);
         end
 
-        descrs{n} = PenumbraDescriptor(shad, pixel, n_angles, length, matte);
-%         drawDescr(matte, descrs{n});
+        descrs{n} = PenumbraDescriptor(shad, pixel, n_angles, length, penumbra_mask, matte);
+        drawDescr(matte, descrs{n});
     end
     
     save('descrs.mat', 'descrs');
