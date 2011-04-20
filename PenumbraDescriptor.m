@@ -44,7 +44,8 @@ classdef PenumbraDescriptor
                 slice = slice+1;
                 [pixel_offset(1) pixel_offset(2)] = polar2cartesian(hl, d.orientation+ang);
 
-                [d.points(slice, 1, :) d.points(slice, 2, :)] = processSlice(dsim, pixel, pixel + pixel_offset,  pixel - pixel_offset);
+                [d.points(slice, 1, :) d.points(slice, 2, :)] = ...
+                    processSlice(dsim, pixel, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
 
                 d.slices_shad{slice} = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
                 if exist('matte', 'var')
@@ -55,22 +56,22 @@ classdef PenumbraDescriptor
     end
 end
 
-function [p1, p2] = processSlice(im, pixel, p1, p2)
+function [p1, p2] = processSlice(im, pixel, p1, p2, penumbra_mask)
     % check if the slice is within image
-    [p1, p2] = getSliceWithinImage(im, p1, p2);
+    [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask);
 
     % ensure that the profile is rising (reverse points if it's not)
     [p1, p2] = ensureProfileRising(im, p1, p2);
 
     % extend the slice all the way to the edges of penumbra
-    [p1, p2] = extendSlice(im, pixel, p1, p2);
+    [p1, p2] = extendSlice(im, pixel, p1, p2, penumbra_mask);
 
     if isempty(p1) || isempty(p2)
         error('p1 or p2 empty');
     end
 end
 
-function [p1, p2] = getSliceWithinImage(im, p1, p2)
+function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
 % returns endpoints of the profile, which lie within the image.
 % p1 and p2 is a pair of end points  of the slice
     % TODO: using improfile here is slow (only need cx and cy), might want 
@@ -98,9 +99,9 @@ function [p1 p2] = ensureProfileRising(im, p1, p2)
     end
 end
 
-function [p1, p2] = extendSlice(im, pixel, p1, p2)
+function [p1, p2] = extendSlice(im, pixel, p1, p2, penumbra_mask)
 % extends the slice to ensure that 0-gradient is reached on both ends
-    offset = (p2(:) - p1(:))*10;
+    offset = (p2(:) - p1(:))*100;
     p1 = p1(:) - offset;
     p2 = p2(:) + offset;
 

@@ -24,7 +24,7 @@ function drawDescriptors()
     matte_abs_grad = abs(dx) + abs(dy);
     penumbra_mask = matte_abs_grad > 0;
     
-    global pixel;
+%     global pixel;
     
     for n = 1:n_descrs
         pixel = getRandomImagePoint(matte);
@@ -32,7 +32,7 @@ function drawDescriptors()
             pixel = getRandomImagePoint(matte);
         end
 
-        descrs{n} = PenumbraDescriptor(shad, pixel, n_angles, length, matte);
+        descrs{n} = PenumbraDescriptor(shad, pixel, n_angles, length, penumbra_mask, matte);
 
         cols = rand(n_angles, 3);
         cols(1,:) = [1 0 0];
