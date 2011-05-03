@@ -1,7 +1,7 @@
 % clear all
 img_date = '2011-05-03';
-shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough1_shad.tif']);
-noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough1_noshad.tif']);
+shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
+noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
 
 shad = shad(:,:,1);
 noshad = noshad(:,:,1);
@@ -12,7 +12,7 @@ noshad = noshad(:,:,1);
 
 matte = shad ./ noshad;
 
-n_angles = 1;
+n_angles = 5;
 len = 100;
 
 [dx dy] = gradient(matte);
@@ -33,8 +33,9 @@ load('descrs.mat');
 % min_err_pdist = [Inf, Inf];
 % min_err = Inf;
 
-[best_slice best_descr] = matchDescrs(c_descr, descrs);
+best_descr = matchDescrs(c_descr, descrs);
 
+norm(c_descr.center - descrs{best_descr}.center)
 % for d = 1:size(descrs, 1)
 %     c_slice = c_descr.slices_shad{1};
 %     for s = 1:length(descrs{d}.slices_shad)
