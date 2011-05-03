@@ -1,18 +1,23 @@
 function saveDescriptors(shad, noshad)
+    img_date = '2011-05-03';
     if nargin ~= 2
-        shad = imread('C:\Work\research\shadow_removal\penumbrae\images\2011-04-18\2011-04-14_rough1_shadow.tif');
-        noshad = imread('C:\Work\research\shadow_removal\penumbrae\images\2011-04-18\2011-04-14_rough1_noshad.tif');
+        shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\', img_date, '\', img_date, '_rough1_shad.tif']);
+        noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough1_noshad.tif']);
         
         shad = shad(:,:,1);
         noshad = noshad(:,:,1);
     end
     
+%     hsize = [50, 50];
+%     shad = imfilter(shad, fspecial('gaussian', hsize, 20), 'replicate');
+%     noshad = imfilter(noshad, fspecial('gaussian', hsize, 20), 'replicate');
+    
     matte = shad ./ noshad;
     
-    n_angles = 10;
+    n_angles = 1;
     length = 100;
     
-    n_descrs = 500;
+    n_descrs = 1000;
     descrs = cell(n_descrs);
     
     [dx dy] = gradient(matte);
@@ -26,8 +31,9 @@ function saveDescriptors(shad, noshad)
         end
 
         descrs{n} = PenumbraDescriptor(shad, pixel, n_angles, length, penumbra_mask, matte);
-        drawDescr(matte, descrs{n});
+%         drawDescr(matte, descrs{n});
     end
     
+    drawDescr(shad, descrs);
     save('descrs.mat', 'descrs');
 end

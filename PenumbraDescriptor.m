@@ -87,6 +87,8 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     vp = [cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)];
     
     % list of points within penumbra
+    % TODO: bug - if there are two penumbra regions, the pixels in between
+    % are included too
     vp = vp(penumbra_mask(uint32(sub2ind(size(penumbra_mask), vp(:,2), vp(:,1)))),:);
     
     p1 = vp(1,:);
