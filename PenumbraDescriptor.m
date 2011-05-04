@@ -53,6 +53,15 @@ classdef PenumbraDescriptor
                 end
             end
         end
+        
+        function draw(d, plot_style)
+            if ~exist('plot_style', 'var')
+                plot_style = '';
+            end
+            for s = 1:length(d.slices_shad)
+                plot(d.points(s, :, 1), d.points(s, :, 2), plot_style);
+            end
+        end
     end
 end
 

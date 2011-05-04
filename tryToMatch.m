@@ -1,68 +1,68 @@
-% clear all
-img_date = '2011-05-03';
-shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
-noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
+function tryToMatch()
+    % clear all
+    img_date = '2011-05-03';
+    shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
+    noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
 
-shad = shad(:,:,1);
-noshad = noshad(:,:,1);
+    shad = shad(:,:,1);
+    noshad = noshad(:,:,1);
 
-% hsize = [50, 50];
-% shad = imfilter(shad, fspecial('gaussian', hsize, 20), 'replicate');
-% noshad = imfilter(noshad, fspecial('gaussian', hsize, 20), 'replicate');
+    % hsize = [50, 50];
+    % shad = imfilter(shad, fspecial('gaussian', hsize, 20), 'replicate');
+    % noshad = imfilter(noshad, fspecial('gaussian', hsize, 20), 'replicate');
 
-matte = shad ./ noshad;
+    matte = shad ./ noshad;
 
-n_angles = 5;
-len = 100;
+    n_angles = 5;
+    len = 100;
+    n_descrs = 50;
 
-[dx dy] = gradient(matte);
-matte_abs_grad = abs(dx) + abs(dy);
-penumbra_mask = matte_abs_grad > 0;
+    [dx dy] = gradient(matte);
+    matte_abs_grad = abs(dx) + abs(dy);
+    penumbra_mask = matte_abs_grad > 0;
+
+    incomplete_matte = zeros(480, 640);
+    load('descrs.mat');
+    for n = 1:n_descrs
+        p = getRandomImagePoint(shad);
+
+        while penumbra_mask(p(2), p(1)) == 0
+            p = getRandomImagePoint(matte);
+        end
+
+        c_descr = PenumbraDescriptor(shad, p, n_angles, len, penumbra_mask);
+
+        % best_descr = 0;
+        % best_slice = 0;
+        % min_err_pdist = [Inf, Inf];
+        % min_err = Inf;
+
+        best_descr = matchDescrs(c_descr, descrs);
+
+        incomplete_matte = reconstructMask(incomplete_matte, descrs{best_descr});
+
+    %     subplot(2,2,1);
+    %     drawDescr(shad, c_descr, 'r');
+    %     subplot(2,2,2);
+    %     drawDescr(matte, descrs{best_descr});
+    %     subplot(2,2,3);
+    %     imshow(m);
+    end
     
-p = getRandomImagePoint(shad);
-
-while penumbra_mask(p(2), p(1)) == 0
-    p = getRandomImagePoint(matte);
+    matte = ones(480, 640);
+    matte(penumbra_mask) = NaN; % fill the penumbra region with NaNs
+    % replace NaNs where values are known
+    matte(incomplete_matte > 0) = incomplete_matte(incomplete_matte > 0);
+    % inpaint remaining NaNs
+    matte = inpaint_nans(matte);
+    % ensure only the penumbra region is affected
+    matte = 1 - penumbra_mask + matte .* penumbra_mask;
+    subplot(2,2,1);
+    imshow(shad);
+    subplot(2,2,2);
+    imshow(matte);
+    subplot(2,2,3);
+    imshow(shad ./ matte);
+    subplot(2,2,4);
+    imshow(noshad);
 end
-
-c_descr = PenumbraDescriptor(shad, p, n_angles, len, penumbra_mask);
-
-load('descrs.mat');
-% best_descr = 0;
-% best_slice = 0;
-% min_err_pdist = [Inf, Inf];
-% min_err = Inf;
-
-best_descr = matchDescrs(c_descr, descrs);
-
-norm(c_descr.center - descrs{best_descr}.center)
-% for d = 1:size(descrs, 1)
-%     c_slice = c_descr.slices_shad{1};
-%     for s = 1:length(descrs{d}.slices_shad)
-%         db_slice = imresize(descrs{d}.slices_shad{1}, [length(c_slice) 1]);
-%     %     subplot(1,2,1);
-%     %     plot(c_slice);
-%     %     subplot(1,2,2);
-%     %     plot(db_slice);
-% 
-%         err = mean((db_slice - c_slice).^2);
-% 
-%         if err < min_err
-%             best_slice = s;
-%             best_descr = d;
-%             min_err = err;
-%             min_err_pdist = abs(c_descr.center - descrs{d}.center);
-%         end
-%     end
-% end
-
-% min_err
-% db_slice = descrs{best_descr}.slices_shad{best_slice};
-% c_slice = c_descr.slices_shad{1};
-% subplot(2,2,[1,3]);
-% plot(c_slice, 'r'); hold on;
-% plot(db_slice); hold off;
-subplot(1,2,1);
-drawDescr(shad, c_descr, 'r');
-subplot(1,2,2);
-drawDescr(matte, descrs{best_descr});
