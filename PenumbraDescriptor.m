@@ -1,6 +1,7 @@
 classdef PenumbraDescriptor
     properties
         center
+        center_pixel
         orientation
         slices_matte
         slices_shad
@@ -13,6 +14,7 @@ classdef PenumbraDescriptor
 
             % storage for slices and points
             d.center = pixel;
+            d.center_pixel = shad(pixel(2), pixel(1));
             d.points = zeros(n_angles, 2, 2);
             d.slices_shad = cell(n_angles);
             
@@ -54,12 +56,12 @@ classdef PenumbraDescriptor
             end
         end
         
-        function draw(d, plot_style)
-            if ~exist('plot_style', 'var')
-                plot_style = '';
+        function draw(d, plot_color)
+            if ~exist('plot_color', 'var')
+                plot_color = [1, 1, 1];
             end
             for s = 1:length(d.slices_shad)
-                plot(d.points(s, :, 1), d.points(s, :, 2), plot_style);
+                plot(d.points(s, :, 1), d.points(s, :, 2), 'color', plot_color);
             end
         end
     end

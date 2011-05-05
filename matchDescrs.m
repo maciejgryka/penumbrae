@@ -1,4 +1,4 @@
-function best_descr = matchDescrs(descr, descrs)
+function [best_descr min_err] = matchDescrs(descr, descrs)
     best_descr = 0;
     min_err = Inf;
 %     min_err_pdist = Inf;

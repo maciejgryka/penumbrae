@@ -18,7 +18,7 @@ function saveDescriptors(shad, noshad)
     length = 100;
     
     n_descrs = 500;
-    descrs = cell(n_descrs);
+    descrs = cell(n_descrs, 1);
     
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);

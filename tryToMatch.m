@@ -15,14 +15,16 @@ function tryToMatch()
 
     n_angles = 5;
     len = 100;
-    n_descrs = 50;
+    n_descrs = 10;
 
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
     penumbra_mask = matte_abs_grad > 0;
 
     incomplete_matte = zeros(480, 640);
+    heatmap = zeros(480, 640);
     load('descrs.mat');
+    good_descrs = cell(n_descrs, 1);
     for n = 1:n_descrs
         p = getRandomImagePoint(shad);
 
@@ -32,23 +34,26 @@ function tryToMatch()
 
         c_descr = PenumbraDescriptor(shad, p, n_angles, len, penumbra_mask);
 
-        % best_descr = 0;
-        % best_slice = 0;
-        % min_err_pdist = [Inf, Inf];
-        % min_err = Inf;
+        [best_descr dist] = matchDescrs(c_descr, descrs);
+        good_descrs{n} = best_descr;
+%         dist = evaluateDescriptorMatch(c_descr, descrs{best_descr});
+%         dist = dist / 400;
+%         if dist > 1
+%             dist = 1;
+%         end
+        
+        % update error image
+%         close all;
+%         h = figure('visible', 'off');
+%         a = axes('parent', h);
+%         imshow(heatmap); hold on;
+%         descrs{best_descr}.draw([dist dist dist]); hold off;
+%         heatmap = frame2im(getframe);
+% %         heatmap = f.cdata(:,:,1);
 
-        best_descr = matchDescrs(c_descr, descrs);
-
-        incomplete_matte = reconstructMask(incomplete_matte, descrs{best_descr});
-
-    %     subplot(2,2,1);
-    %     drawDescr(shad, c_descr, 'r');
-    %     subplot(2,2,2);
-    %     drawDescr(matte, descrs{best_descr});
-    %     subplot(2,2,3);
-    %     imshow(m);
+        incomplete_matte = reconstructMatte(incomplete_matte, descrs{best_descr});
     end
-    
+
     matte = ones(480, 640);
     matte(penumbra_mask) = NaN; % fill the penumbra region with NaNs
     % replace NaNs where values are known
@@ -64,5 +69,5 @@ function tryToMatch()
     subplot(2,2,3);
     imshow(shad ./ matte);
     subplot(2,2,4);
-    imshow(noshad);
+    imshow(heatmap);
 end
