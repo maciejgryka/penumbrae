@@ -5,6 +5,7 @@ classdef PenumbraDescriptor
         orientation
         slices_matte
         slices_shad
+        center_inds
         points
     end
     
@@ -16,6 +17,7 @@ classdef PenumbraDescriptor
             d.center = pixel;
             d.points = zeros(n_angles, 2, 2);
             d.slices_shad = cell(n_angles);
+            d.center_inds = zeros(n_angles,1);
             
             % dsim is the image according to which the descriptor is
             % constructed (orientation and penumbra boundaries are taken
@@ -49,7 +51,9 @@ classdef PenumbraDescriptor
                 [d.points(slice, 1, :) d.points(slice, 2, :)] = ...
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
 
-                d.slices_shad{slice} = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
+                [slice_pts_x slice_pts_y d.slices_shad{slice}] = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
+                d.center_inds(slice) = findClosestPoint(slice_pts_x, slice_pts_y, d.center);
+                
                 if exist('matte', 'var')
                     d.slices_matte{slice} = improfile(matte, d.points(slice, :, 1), d.points(slice, :, 2));
                 end
@@ -63,6 +67,22 @@ classdef PenumbraDescriptor
             for s = 1:length(d.slices_shad)
                 plot(d.points(s, :, 1), d.points(s, :, 2), 'color', plot_color);
             end
+            plot(d.center(1), d.center(2), 'xr');
+        end
+    end
+end
+
+function ind = findClosestPoint(pts_x, pts_y, point)
+    if length(pts_x) ~= length(pts_y)
+        error('pts_x and pts_y need to have the same length');
+    end
+    minerr = Inf;
+    ind = 0;
+    for p = 1:length(pts_x)
+        err = norm([pts_x(p) pts_y(p)] - point);
+        if err < minerr
+            ind = p;
+            minerr = err;
         end
     end
 end
@@ -95,14 +115,11 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     cy_valid = cy >= 1 & cy < size(im,1);
 
     % list valid points
-    vp = [cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)];
+    vp = round([cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)]);
     
     % list of points within penumbra
     % TODO: bug - if there are two penumbra regions, the pixels in between
     % are included too
-%     vp = vp(penumbra_mask(uint32(sub2ind(size(penumbra_mask), vp(:,2), vp(:,1)))),:);
-    vp = uint32(vp);
-    vpip = zeros(size(vp,1),1); % valid points in penumbra
     for row = 1:size(vp,1)
         if penumbra_mask(vp(row,2), vp(row,1)) == 0
             vp(row, :) = [0, 0];
@@ -120,8 +137,7 @@ end
 
 function [p1 p2] = ensureProfileRising(im, p1, p2)
     prof = improfile(im, [p1(1) p2(1)] , [p1(2) p2(2)]);
-    % TODO: primitive method of figuring out direction - use sum of 
-    % gradients?
+    % TODO: primitive method of figuring out direction
 %     if prof(1) > prof(size(prof,1))
     if sum(gradient(prof)) < 0
         temp = p1;

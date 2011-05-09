@@ -32,10 +32,14 @@ function drawMatches()
 
         [best_descr dist slice_err] = matchDescrs(c_descr, descrs);
             
-        subplot(2,2,1); imshow(shad); hold on; c_descr.draw(); hold off;
-        subplot(2,2,2); imshow(plain); hold on; descrs{best_descr}.draw(); hold off;
+        subplot(2,2,1); imshow(shad); hold on; c_descr.draw('g'); hold off;
+        subplot(2,2,2); imshow(plain); hold on; descrs{best_descr}.draw('b'); hold off;
 
-        subplot(2,2,3); plot(c_descr.slices_shad{1});
-        subplot(2,2,4); plot(descrs{best_descr}.slices_shad{1});
+        subplot(2,2,3:4); 
+            plot(c_descr.slices_shad{1}, 'g'); hold on;
+            plot(c_descr.center_inds(1), c_descr.slices_shad{1}(c_descr.center_inds(1)), 'xr');
+            plot(descrs{best_descr}.slices_shad{1}, 'b');
+            plot(descrs{best_descr}.center_inds(1), descrs{best_descr}.slices_shad{1}(descrs{best_descr}.center_inds(1)), 'xr'); 
+            hold off;
     end
 end
