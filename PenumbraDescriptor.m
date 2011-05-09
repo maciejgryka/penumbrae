@@ -5,7 +5,6 @@ classdef PenumbraDescriptor
         orientation
         slices_matte
         slices_shad
-        grad_shad
         points
     end
     
@@ -17,7 +16,6 @@ classdef PenumbraDescriptor
             d.center = pixel;
             d.points = zeros(n_angles, 2, 2);
             d.slices_shad = cell(n_angles);
-            d.grad_shad = cell(n_angles);
             
             % dsim is the image according to which the descriptor is
             % constructed (orientation and penumbra boundaries are taken
@@ -46,13 +44,12 @@ classdef PenumbraDescriptor
 
             for ang = 0:ang_step:pi-ang_step
                 slice = slice+1;
-                [pixel_offset(1) pixel_offset(2)] = polar2cartesian(hl, d.orientation+ang);
-
+                [pixel_offset(1) pixel_offset(2)] = pol2cart(d.orientation+ang, hl);
+                
                 [d.points(slice, 1, :) d.points(slice, 2, :)] = ...
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
 
                 d.slices_shad{slice} = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
-                d.grad_shad{slice} = gradient(d.slices_shad{slice});
                 if exist('matte', 'var')
                     d.slices_matte{slice} = improfile(matte, d.points(slice, :, 1), d.points(slice, :, 2));
                 end
@@ -93,20 +90,32 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     
-    % get valid coords
+    % get valid coords (within image boundary)
     cx_valid = cx >= 1 & cx < size(im,2);
     cy_valid = cy >= 1 & cy < size(im,1);
 
-    % list valid points (within image boundary)
+    % list valid points
     vp = [cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)];
     
     % list of points within penumbra
     % TODO: bug - if there are two penumbra regions, the pixels in between
     % are included too
-    vp = vp(penumbra_mask(uint32(sub2ind(size(penumbra_mask), vp(:,2), vp(:,1)))),:);
+%     vp = vp(penumbra_mask(uint32(sub2ind(size(penumbra_mask), vp(:,2), vp(:,1)))),:);
+    vp = uint32(vp);
+    vpip = zeros(size(vp,1),1); % valid points in penumbra
+    for row = 1:size(vp,1)
+        if penumbra_mask(vp(row,2), vp(row,1)) == 0
+            vp(row, :) = [0, 0];
+        end
+    end
     
-    p1 = vp(1,:);
-    p2 = vp(size(vp,1),:);
+    vpx = vp(:,1);
+    vpy = vp(:,2);
+    
+    vp = [vpx(vpx > 0) vpy(vpy > 0)];
+    
+    p1 = double(vp(1,:));
+    p2 = double(vp(size(vp,1),:));
 end
 
 function [p1 p2] = ensureProfileRising(im, p1, p2)

@@ -14,7 +14,7 @@ function drawMatches()
     h = size(matte, 1);
     n_angles = 1;
     len = 100;
-    n_descrs = 5;
+    n_descrs = 10;
     load('descrs.mat');
     
     [dx dy] = gradient(matte);
