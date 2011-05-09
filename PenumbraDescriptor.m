@@ -5,6 +5,7 @@ classdef PenumbraDescriptor
         orientation
         slices_matte
         slices_shad
+        grad_shad
         points
     end
     
@@ -14,9 +15,9 @@ classdef PenumbraDescriptor
 
             % storage for slices and points
             d.center = pixel;
-            d.center_pixel = shad(pixel(2), pixel(1));
             d.points = zeros(n_angles, 2, 2);
             d.slices_shad = cell(n_angles);
+            d.grad_shad = cell(n_angles);
             
             % dsim is the image according to which the descriptor is
             % constructed (orientation and penumbra boundaries are taken
@@ -26,6 +27,7 @@ classdef PenumbraDescriptor
             if exist('matte', 'var') && ~isempty(matte)
                 d.slices_matte = cell(n_angles);
                 dsim = matte;
+                d.center_pixel = matte(pixel(2), pixel(1));
             else
                 dsim = shad;
             end
@@ -50,6 +52,7 @@ classdef PenumbraDescriptor
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
 
                 d.slices_shad{slice} = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
+                d.grad_shad{slice} = gradient(d.slices_shad{slice});
                 if exist('matte', 'var')
                     d.slices_matte{slice} = improfile(matte, d.points(slice, :, 1), d.points(slice, :, 2));
                 end
@@ -110,7 +113,8 @@ function [p1 p2] = ensureProfileRising(im, p1, p2)
     prof = improfile(im, [p1(1) p2(1)] , [p1(2) p2(2)]);
     % TODO: primitive method of figuring out direction - use sum of 
     % gradients?
-    if prof(1) > prof(size(prof,1))
+%     if prof(1) > prof(size(prof,1))
+    if sum(gradient(prof)) < 0
         temp = p1;
         p1 = p2;
         p2 = temp;

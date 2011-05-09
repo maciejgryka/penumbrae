@@ -6,6 +6,9 @@ function saveDescriptors(shad, noshad)
         
         shad = shad(:,:,1);
         noshad = noshad(:,:,1);
+        
+%         shad = shad(150:249, 370:469);
+%         noshad = noshad(150:249, 370:469);
     end
     
 %     hsize = [50, 50];
@@ -14,7 +17,7 @@ function saveDescriptors(shad, noshad)
     
     matte = shad ./ noshad;
     
-    n_angles = 5;
+    n_angles = 1;
     length = 100;
     
     n_descrs = 500;
