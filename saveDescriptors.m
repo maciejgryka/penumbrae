@@ -20,7 +20,7 @@ function saveDescriptors(shad, noshad)
     n_angles = 1;
     length = 100;
     
-    n_descrs = 500;
+    n_descrs = 2000;
     descrs = cell(n_descrs, 1);
     
     [dx dy] = gradient(matte);
@@ -37,6 +37,6 @@ function saveDescriptors(shad, noshad)
 %         drawDescr(matte, descrs{n});
     end
     
-%     drawDescr(shad, descrs);
+    drawDescr(shad, descrs);
     save('descrs.mat', 'descrs');
 end

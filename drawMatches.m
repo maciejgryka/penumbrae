@@ -12,10 +12,13 @@ function drawMatches()
 
     w = size(matte, 2);
     h = size(matte, 1);
-    n_angles = 1;
+    n_angles = 3;
     len = 100;
-    n_descrs = 10;
+    n_descrs = 100;
     load('descrs.mat');
+    cols = ['r' 'g' 'b' 'c' 'm' 'y' 'w'];
+    
+    k = 2;
     
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
@@ -30,16 +33,28 @@ function drawMatches()
 
         c_descr = PenumbraDescriptor(shad, p, n_angles, len, penumbra_mask);
 
-        [best_descr dist slice_err] = matchDescrs(c_descr, descrs);
+        [best_descr dist] = matchDescrsN(c_descr, descrs, k);
             
         subplot(2,2,1); imshow(shad); hold on; c_descr.draw('g'); hold off;
-        subplot(2,2,2); imshow(plain); hold on; descrs{best_descr}.draw('b'); hold off;
-
-        subplot(2,2,3:4); 
-            plot(c_descr.slices_shad{1}, 'g'); hold on;
-            plot(c_descr.center_inds(1), c_descr.slices_shad{1}(c_descr.center_inds(1)), 'xr');
-            plot(descrs{best_descr}.slices_shad{1}, 'b');
-            plot(descrs{best_descr}.center_inds(1), descrs{best_descr}.slices_shad{1}(descrs{best_descr}.center_inds(1)), 'xr'); 
+        subplot(2,2,2); imshow(plain); hold on; 
+            for d = 1:k
+                descrs{best_descr(d)}.draw(cols(d));
+            end
             hold off;
+
+%         subplot(2,2,3:4); 
+%             plot(c_descr.slices_shad{1}, 'g'); hold on;
+%             plot(c_descr.center_inds(1), c_descr.slices_shad{1}(c_descr.center_inds(1)), 'xr');
+%             plot(descrs{best_descr}.slices_shad{1}, 'b');
+%             plot(descrs{best_descr}.center_inds(1), descrs{best_descr}.slices_shad{1}(descrs{best_descr}.center_inds(1)), 'xr'); 
+%             hold off;
+        subplot(2,2,3:4);
+            [s1 s2] = getCompatibleSlices(c_descr.slices_shad{1}, ...
+                                          descrs{best_descr(1)}.slices_shad{1}, ...
+                                          c_descr.center_inds(1), ...
+                                          descrs{best_descr(1)}.center_inds(1));
+          plot(s1); hold on;
+          plot(s2);
+          hold off;
     end
 end

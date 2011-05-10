@@ -1,6 +1,6 @@
-function [best_descr min_err min_slice_err] = matchDescrs(descr, descrs)
-    best_descr = 0;
-    min_err = Inf;
+function [best_descr min_err] = matchDescrsN(descr, descrs, n)
+    best_descr = zeros(n,1);
+    min_err = Inf*ones(n,1);
 %     min_err_pdist = Inf;
     
     for d = 1:length(descrs)
@@ -14,10 +14,14 @@ function [best_descr min_err min_slice_err] = matchDescrs(descr, descrs)
         end
         err = mean(slice_err);
 
-        if err < min_err
-            best_descr = d;
-            min_err = err;
-            min_slice_err = slice_err;
+        [max_val max_ind] = max(min_err);
+        
+        if err < max_val
+            best_descr(max_ind) = d;
+            min_err(max_ind) = err;
         end
     end
+    
+    [min_err i] = sort(min_err);
+    best_descr = best_descr(i);
 end

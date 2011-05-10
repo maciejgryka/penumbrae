@@ -22,7 +22,7 @@ function tryToMatch()
     h = size(matte, 1);
     n_angles = 1;
     len = 100;
-    n_descrs = 500;
+    n_descrs = 1000;
 
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);

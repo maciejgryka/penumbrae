@@ -111,8 +111,8 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     
     % get valid coords (within image boundary)
-    cx_valid = cx >= 1 & cx < size(im,2);
-    cy_valid = cy >= 1 & cy < size(im,1);
+    cx_valid = cx >= 1 & cx <= size(im,2);
+    cy_valid = cy >= 1 & cy <= size(im,1);
 
     % list valid points
     vp = round([cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)]);
@@ -130,6 +130,10 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     vpy = vp(:,2);
     
     vp = [vpx(vpx > 0) vpy(vpy > 0)];
+    
+    if size(vp,1) == 0 || size(vp,2) == 0
+        a = 1;
+    end
     
     p1 = double(vp(1,:));
     p2 = double(vp(size(vp,1),:));
