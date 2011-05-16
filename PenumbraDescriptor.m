@@ -5,19 +5,31 @@ classdef PenumbraDescriptor
         orientation
         slices_matte
         slices_shad
+%         patch_matte
         center_inds
         points
     end
     
     methods
-        function d = PenumbraDescriptor(shad, pixel, n_angles, length, penumbra_mask, matte)
+        function d = PenumbraDescriptor(shad, pixel, n_angles, len, penumbra_mask, matte)
         %PENUMBRADESCRIPTOR returns descriptor at PIXEL
+            if nargin==0
+                d.center = 0;
+                d.center_pixel = 0;
+                d.orientation = 0;
+                d.slices_matte = 0;
+                d.slices_shad = 0;
+                d.center_inds = 0;
+                d.points = 0;
+                return
+            end
 
             % storage for slices and points
             d.center = pixel;
             d.points = zeros(n_angles, 2, 2);
-            d.slices_shad = cell(n_angles);
+            d.slices_shad = zeros(n_angles, len);
             d.center_inds = zeros(n_angles,1);
+%             patch_size = 10;
             
             % dsim is the image according to which the descriptor is
             % constructed (orientation and penumbra boundaries are taken
@@ -28,18 +40,20 @@ classdef PenumbraDescriptor
                 d.slices_matte = cell(n_angles);
                 dsim = matte;
                 d.center_pixel = matte(pixel(2), pixel(1));
+%                 d.patch_matte = matte(pixel(2)-patch_size:pixel(2)+patch_size, pixel(1)-patch_size:pixel(1)+patch_size);
             else
                 dsim = shad;
             end
             
-            hl = length/2; % half length
+            hl = len/2; % half length
 
             bounds = [pixel(1)-hl; pixel(2)-hl; pixel(1)+hl; pixel(2)+hl];
             bounds(1:2) = checkImBounds(bounds(1:2), size(dsim));
             bounds(3:4) = checkImBounds(bounds(3:4), size(dsim));
 
             patch = dsim(bounds(2):bounds(4), bounds(1):bounds(3));
-            d.orientation = dominantGradientDir(patch);
+%             d.orientation = dominantGradientDir(patch);
+            d.orientation = 0;
 
             ang_step = pi/n_angles;
             slice = 0;
@@ -50,8 +64,12 @@ classdef PenumbraDescriptor
                 
                 [d.points(slice, 1, :) d.points(slice, 2, :)] = ...
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
+                if isnan(d.points(slice, 1, :))
+                    d.points = NaN;
+                    return;
+                end
 
-                [slice_pts_x slice_pts_y d.slices_shad{slice}] = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
+                [slice_pts_x slice_pts_y d.slices_shad(slice,:)] = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
                 d.center_inds(slice) = findClosestPoint(slice_pts_x, slice_pts_y, d.center);
                 
                 if exist('matte', 'var')
@@ -64,7 +82,7 @@ classdef PenumbraDescriptor
             if ~exist('plot_color', 'var')
                 plot_color = [1, 1, 1];
             end
-            for s = 1:length(d.slices_shad)
+            for s = 1:len(d.slices_shad)
                 plot(d.points(s, :, 1), d.points(s, :, 2), 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');
@@ -90,7 +108,10 @@ end
 function [p1, p2] = processSlice(im, p1, p2, penumbra_mask)
     % check if the slice is within image and penumbra boundaries
     [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask);
-
+    if isnan(p1)
+        return;
+    end
+    
     % ensure that the profile is rising (reverse points if it's not)
     [p1, p2] = ensureProfileRising(im, p1, p2);
 
@@ -104,9 +125,11 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
 % p1 and p2 is a pair of end points  of the slice
     % TODO: using improfile here is slow (only need cx and cy), might want 
     % to improve later
-    offset = (p2(:) - p1(:))*100;
-    p1 = p1(:) - offset;
-    p2 = p2(:) + offset;
+    op1 = p1; op2 = p2;
+    
+%     offset = (p2(:) - p1(:))*100;
+%     p1 = p1(:) - offset;
+%     p2 = p2(:) + offset;
     
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     
@@ -132,7 +155,8 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     vp = [vpx(vpx > 0) vpy(vpy > 0)];
     
     if size(vp,1) == 0 || size(vp,2) == 0
-        a = 1;
+        p1 = NaN;
+        return;
     end
     
     p1 = double(vp(1,:));

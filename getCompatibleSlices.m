@@ -1,7 +1,7 @@
 function [s1 s2] = getCompatibleSlices(s1, s2, s1_cind, s2_cind)
 % aligns two slices so their centers are in the same place and returns the common subset 
 % s1_cind is the index of the center of slice 1
-        
+    os1 = s1; os2 = s2;
     % number of elements in each slice to the left and to the right of the
     % center
     s1_left_elems = s1_cind - 1;

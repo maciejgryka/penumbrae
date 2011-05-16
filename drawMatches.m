@@ -16,9 +16,9 @@ function drawMatches()
     len = 100;
     n_descrs = 100;
     load('descrs.mat');
-    cols = ['r' 'g' 'b' 'c' 'm' 'y' 'w'];
+    cols = ['g' 'b' 'c' 'm' 'y' 'w'];
     
-    k = 2;
+    k = 6;
     
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
@@ -35,10 +35,10 @@ function drawMatches()
 
         [best_descr dist] = matchDescrsN(c_descr, descrs, k);
             
-        subplot(2,2,1); imshow(shad); hold on; c_descr.draw('g'); hold off;
+        subplot(2,2,1); imshow(shad); hold on; c_descr.draw('r'); hold off;
         subplot(2,2,2); imshow(plain); hold on; 
             for d = 1:k
-                descrs{best_descr(d)}.draw(cols(d));
+                descrs(best_descr(d)).draw(cols(d));
             end
             hold off;
 
@@ -50,11 +50,11 @@ function drawMatches()
 %             hold off;
         subplot(2,2,3:4);
             [s1 s2] = getCompatibleSlices(c_descr.slices_shad{1}, ...
-                                          descrs{best_descr(1)}.slices_shad{1}, ...
+                                          descrs(best_descr(1)).slices_shad{1}, ...
                                           c_descr.center_inds(1), ...
-                                          descrs{best_descr(1)}.center_inds(1));
-          plot(s1); hold on;
-          plot(s2);
+                                          descrs(best_descr(1)).center_inds(1));
+          plot(gradient(s1), 'r'); hold on;
+          plot(gradient(s2), 'g');
           hold off;
     end
 end

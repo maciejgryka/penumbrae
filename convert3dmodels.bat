@@ -1,0 +1,1 @@
+meshlabserver -i "C:\Work\research\shadow_removal\penumbrae\3dModels\generic\0.off" -o "C:\Work\research\shadow_removal\penumbrae\3dModels\generic\obj\0.obj"
