@@ -37,7 +37,7 @@ classdef PenumbraDescriptor
             dsim = [];
             
             if exist('matte', 'var') && ~isempty(matte)
-                d.slices_matte = cell(n_angles);
+                d.slices_matte = zeros(n_angles, len);
                 dsim = matte;
                 d.center_pixel = matte(pixel(2), pixel(1));
 %                 d.patch_matte = matte(pixel(2)-patch_size:pixel(2)+patch_size, pixel(1)-patch_size:pixel(1)+patch_size);
@@ -56,33 +56,60 @@ classdef PenumbraDescriptor
             d.orientation = 0;
 
             ang_step = pi/n_angles;
-            slice = 0;
+            slice_index = 0;
 
             for ang = 0:ang_step:pi-ang_step
-                slice = slice+1;
+                slice_index = slice_index+1;
                 [pixel_offset(1) pixel_offset(2)] = pol2cart(d.orientation+ang, hl);
                 
-                [d.points(slice, 1, :) d.points(slice, 2, :)] = ...
+                [d.points(slice_index, 1, :) d.points(slice_index, 2, :)] = ...
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
-                if isnan(d.points(slice, 1, :))
+                if isnan(d.points(slice_index, 1, :))
                     d.points = NaN;
                     return;
                 end
 
-                [slice_pts_x slice_pts_y d.slices_shad(slice,:)] = improfile(shad, d.points(slice, :, 1), d.points(slice, :, 2));
-                d.center_inds(slice) = findClosestPoint(slice_pts_x, slice_pts_y, d.center);
+                [slice_pts_x slice_pts_y sl] = improfile(shad, d.points(slice_index, :, 1), d.points(slice_index, :, 2));
+                d = d.setSliceShad(slice_index, sl);
+                d.center_inds(slice_index) = findClosestPoint(slice_pts_x, slice_pts_y, d.center);
                 
                 if exist('matte', 'var')
-                    d.slices_matte{slice} = improfile(matte, d.points(slice, :, 1), d.points(slice, :, 2));
+                    d = d.setSliceMatte(slice_index, improfile(matte, d.points(slice_index, :, 1), d.points(slice_index, :, 2)));
                 end
             end
+        end
+        
+        function d = setSliceShad(d, i, slice)
+            d.slices_shad(i,:) = NaN;
+            if length(slice) > length(d.slices_shad(i, :))+1
+                error('Slice too long, cannot set.');
+            end
+            d.slices_shad(i, 1:length(slice)) = slice;
+        end
+        
+        function d = setSliceMatte(d, i, slice)
+            d.slices_matte(i,:) = NaN;
+            if length(slice) > length(d.slices_matte(i, :))+1
+                error('Slice too long, cannot set.');
+            end
+            d.slices_matte(i, 1:length(slice)) = slice;
+        end
+        
+        function slice = getSliceShad(d, i)
+            slice = d.slices_shad(i, :);
+            slice = slice(~isnan(slice));
+        end
+        
+        function slice = getSliceMatte(d, i)
+            slice = d.slices_matte(i, :);
+            slice = slice(~isnan(slice));
         end
         
         function draw(d, plot_color)
             if ~exist('plot_color', 'var')
                 plot_color = [1, 1, 1];
             end
-            for s = 1:len(d.slices_shad)
+            for s = 1:size(d.slices_shad,1)
                 plot(d.points(s, :, 1), d.points(s, :, 2), 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');

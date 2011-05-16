@@ -1,4 +1,4 @@
-function matte = reconstructMatte(matte, c_descr, db_descr, true_matte)
+function matte = reconstructMatte(matte, c_descr, db_descr)
     for s = 1:length(db_descr.slices_matte)
         % == Insert only center pixels ==
         matte = improfileWrite2(matte, c_descr.center, c_descr.center, db_descr.center_pixel);

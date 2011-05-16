@@ -7,7 +7,7 @@ function drawDescr(im, descrs, plotstyle)
 %     if iscell(descrs)
         for d = 1:length(descrs)
             plot(descrs(d).center(1), descrs(d).center(2), 'or', 'MarkerSize', 5);
-            for s = 1:length(descrs(d).slices_shad)
+            for s = 1:size(descrs(d).slices_shad, 1)
                 plot(descrs(d).points(s, :, 1), descrs(d).points(s, :, 2), plotstyle);
             end
         end

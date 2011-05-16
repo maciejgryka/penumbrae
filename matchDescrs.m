@@ -7,10 +7,10 @@ function [best_descr min_err min_slice_err] = matchDescrs(descr, descrs)
         if isnan(descrs(d).points)
             continue;
         end
-        slice_err = zeros(length(descrs(d).slices_shad), 1);
-        for s = 1:length(descrs(d).slices_shad)
-            c_slice = gradient(descr.slices_shad{s});
-            db_slice = gradient(descrs(d).slices_shad{s});
+        slice_err = zeros(size(descrs(d).slices_shad,1), 1);
+        for s = 1:size(descrs(d).slices_shad, 1)
+            c_slice = gradient(descr.getSliceShad(s));
+            db_slice = gradient(descrs(d).getSliceShad(s));
             [c_slice_c db_slice_c] = getCompatibleSlices(c_slice, db_slice, descr.center_inds(s), descrs(d).center_inds(s));
             overlap_weight = (length(c_slice_c)/length(c_slice) + length(db_slice_c)/length(db_slice))/2;
             slice_err(s) = sum((db_slice_c - c_slice_c).^2)/(overlap_weight^5);

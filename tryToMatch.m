@@ -39,7 +39,7 @@ function tryToMatch()
     incomplete_matte = zeros(h, w);
     load('descrs.mat');
     good_descrs = zeros(n_descrs, 1);
-    slice_errs = zeros(n_descrs, length(descrs(1).slices_shad));
+    slice_errs = zeros(n_descrs, size(descrs(1).slices_shad),1);
 %     imshow(penumbra_mask); hold on;
     for n = 1:n_descrs
         [p(2) p(1)] = ind2sub(size(penumbra_mask), p_pix(round(length(p_pix)*rand()+0.5)));
@@ -55,13 +55,13 @@ function tryToMatch()
 %             continue;
 %         end
         
-        incomplete_matte = reconstructMatte(incomplete_matte, c_descr, descrs(best_descr), matte);
+        incomplete_matte = reconstructMatte(incomplete_matte, c_descr, descrs(best_descr));
 
         subplot(2,2,1); imshow(shad); hold on; c_descr.draw(); hold off;
         subplot(2,2,2); imshow(plain); hold on; descrs(best_descr).draw(); hold off;
 
-        subplot(2,2,3); plot(c_descr.slices_shad{1});
-        subplot(2,2,4); plot(descrs(best_descr).slices_shad{1});
+        subplot(2,2,3); plot(c_descr.slices_shad(1,:));
+        subplot(2,2,4); plot(descrs(best_descr).slices_shad(1,:));
     end
     hold off;
     slice_errs = slice_errs ./ max(max(slice_errs));

@@ -19,7 +19,7 @@ function saveDescriptors(shad, noshad)
     
     n_angles = 1;
     len = 20;
-    n_descrs = 10;
+    n_descrs = 1000;
     
     descrs = repmat(PenumbraDescriptor(), n_descrs, 1);
     
