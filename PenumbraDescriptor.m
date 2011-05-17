@@ -27,7 +27,7 @@ classdef PenumbraDescriptor
             % storage for slices and points
             d.center = pixel;
             d.points = zeros(n_angles, 2, 2);
-            d.slices_shad = zeros(n_angles, len);
+            d.slices_shad = zeros(n_angles, len+1);
             d.center_inds = zeros(n_angles,1);
 %             patch_size = 10;
             
@@ -37,7 +37,7 @@ classdef PenumbraDescriptor
             dsim = [];
             
             if exist('matte', 'var') && ~isempty(matte)
-                d.slices_matte = zeros(n_angles, len);
+                d.slices_matte = zeros(n_angles, len+1);
                 dsim = matte;
                 d.center_pixel = matte(pixel(2), pixel(1));
 %                 d.patch_matte = matte(pixel(2)-patch_size:pixel(2)+patch_size, pixel(1)-patch_size:pixel(1)+patch_size);

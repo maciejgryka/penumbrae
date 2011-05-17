@@ -17,7 +17,7 @@ function saveDescriptors(shad, noshad)
     
     matte = shad ./ noshad;
     
-    n_angles = 9;
+    n_angles = 3;
     len = 20;
     n_descrs = 1000;
     
@@ -42,6 +42,11 @@ function saveDescriptors(shad, noshad)
 %         drawDescr(matte, descrs{n});
     end
     
+    % concatenate slices_shad and slices_matte arrays and put the in one 
+    % big matrix with dimensions     [(n_descrs*n_angles) X len]
+    slices_shad = cat(1,descrs(:).slices_shad);
+    slices_matte = cat(1,descrs(:).slices_matte);
+    
 %     drawDescr(shad, descrs);
-    save('descrs.mat', 'descrs');
+    save('descrs.mat', 'descrs', 'slices_shad', 'slices_matte');
 end

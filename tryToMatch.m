@@ -27,7 +27,7 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    n_angles = 9;
+    n_angles = 3;
     len = 20;
     n_descrs = 500;
 
