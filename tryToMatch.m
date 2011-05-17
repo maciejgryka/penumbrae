@@ -4,19 +4,19 @@ function tryToMatch()
     shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
     noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
 
-    plain = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_shad.tif']);
-    plain_noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_noshad.tif']);
+%     plain = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_shad.tif']);
+%     plain_noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_noshad.tif']);
     
     shad = shad(:,:,1);
     noshad = noshad(:,:,1);
 
-    shad = shad(150:199, 370:419);
-    noshad = noshad(150:199, 370:419);
-    plain = plain(150:199, 370:419);
-    plain_noshad = plain_noshad(150:199, 370:419);
+%     shad = shad(150:249, 370:469);
+%     noshad = noshad(150:249, 370:469);
+%     plain = plain(150:249, 370:469);
+%     plain_noshad = plain_noshad(150:249, 370:469);
     
-    shad = plain;
-    noshad = plain_noshad;
+%     shad = plain;
+%     noshad = plain_noshad;
 
     % hsize = [50, 50];
     % shad = imfilter(shad, fspecial('gaussian', hsize, 20), 'replicate');
@@ -27,9 +27,11 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    n_angles = 3;
-    len = 20;
-    n_descrs = 500;
+    n_angles = 1;
+    len = 30;
+    n_descrs = 5000;
+    
+    k = 1;
 
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
@@ -38,36 +40,28 @@ function tryToMatch()
 
     incomplete_matte = zeros(h, w);
     load('descrs.mat');
-    good_descrs = zeros(n_descrs, 1);
-    slice_errs = zeros(n_descrs, size(descrs(1).slices_shad),1);
     
-    error_heatmap_matching = zeros(size(shad));
-    error_heatmap_gt = zeros(size(shad));
-%     imshow(penumbra_mask); hold on;
+    build_params.target_precision = 0.9;
+    build_params.build_weight = 0.01;
+    build_params.memory_weight = 0;
+    [index, parameters] = flann_build_index(slices_shad', build_params);
+    
     for n = 1:n_descrs
         [p(2) p(1)] = ind2sub(size(penumbra_mask), p_pix(round(length(p_pix)*rand()+0.5)));
 
         c_descr = PenumbraDescriptor(shad, p, n_angles, len, penumbra_mask);
 
-        [best_descr dist slice_err] = matchDescrs(c_descr, descrs);
-        good_descrs(n) = best_descr;
-        slice_errs(n, :) = slice_err;
-        
-        error_heatmap_matching(p(2), p(1)) = dist;
-        dist
-%         if dist > 0.001
-%             continue;
-%         end
-        
-        incomplete_matte = reconstructMatte(incomplete_matte, c_descr, descrs(best_descr));
-        
-        error_heatmap_gt(p(2), p(1)) = abs(incomplete_matte(p(2), p(1)) - matte(p(2), p(1)));
+        best_descr = flann_search(index,c_descr.slices_shad',k,parameters);
+        if best_descr < 1 || best_descr > size(slices_shad,1)
+            continue;
+        end
 
-        subplot(2,1,1); imshow(shad); hold on; c_descr.draw('r'); descrs(best_descr).draw('b'); hold off;
-        subplot(2,1,2); plot(c_descr.slices_shad(1,:), 'r'); hold on; plot(descrs(best_descr).slices_shad(1,:), 'b'); hold off;
+        incomplete_matte = reconstructMatte(incomplete_matte, c_descr, descrs(best_descr));
+
+%         subplot(2,1,1); imshow(shad); hold on; c_descr.draw('r'); descrs(best_descr).draw('b'); hold off;
+%         subplot(2,1,2); plot(c_descr.slices_shad(1,:), 'r'); hold on; plot(descrs(best_descr).slices_shad(1,:), 'b'); hold off;
     end
     hold off;
-    slice_errs = slice_errs ./ max(max(slice_errs));
     
     matte = ones(h, w);
     matte(penumbra_mask) = NaN; % fill the penumbra region with NaNs

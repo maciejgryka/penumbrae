@@ -7,8 +7,8 @@ function saveDescriptors(shad, noshad)
         shad = shad(:,:,1);
         noshad = noshad(:,:,1);
         
-        shad = shad(150:199, 370:419);
-        noshad = noshad(150:199, 370:419);
+%         shad = shad(150:249, 370:469);
+%         noshad = noshad(150:249, 370:469);
     end
     
 %     hsize = [50, 50];
@@ -17,9 +17,9 @@ function saveDescriptors(shad, noshad)
     
     matte = shad ./ noshad;
     
-    n_angles = 3;
-    len = 20;
-    n_descrs = 1000;
+    n_angles = 1;
+    len = 30;
+    n_descrs = 3000;
     
     descrs = repmat(PenumbraDescriptor(), n_descrs, 1);
     
@@ -47,6 +47,6 @@ function saveDescriptors(shad, noshad)
     slices_shad = cat(1,descrs(:).slices_shad);
     slices_matte = cat(1,descrs(:).slices_matte);
     
-%     drawDescr(shad, descrs);
+    drawDescr(shad, descrs);
     save('descrs.mat', 'descrs', 'slices_shad', 'slices_matte');
 end
