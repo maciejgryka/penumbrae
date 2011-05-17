@@ -1,8 +1,8 @@
 function tryToMatch()
     % clear all
-    img_date = '2011-05-03';
-    shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough1_shad.tif']);
-    noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough1_noshad.tif']);
+    img_date = '2011-05-16';
+    shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
+    noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
 
     plain = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_shad.tif']);
     plain_noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_noshad.tif']);
@@ -27,7 +27,7 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    n_angles = 1;
+    n_angles = 9;
     len = 20;
     n_descrs = 500;
 
@@ -40,6 +40,9 @@ function tryToMatch()
     load('descrs.mat');
     good_descrs = zeros(n_descrs, 1);
     slice_errs = zeros(n_descrs, size(descrs(1).slices_shad),1);
+    
+    error_heatmap_matching = zeros(size(shad));
+    error_heatmap_gt = zeros(size(shad));
 %     imshow(penumbra_mask); hold on;
     for n = 1:n_descrs
         [p(2) p(1)] = ind2sub(size(penumbra_mask), p_pix(round(length(p_pix)*rand()+0.5)));
@@ -50,18 +53,18 @@ function tryToMatch()
         good_descrs(n) = best_descr;
         slice_errs(n, :) = slice_err;
         
+        error_heatmap_matching(p(2), p(1)) = dist;
         dist
 %         if dist > 0.001
 %             continue;
 %         end
         
         incomplete_matte = reconstructMatte(incomplete_matte, c_descr, descrs(best_descr));
+        
+        error_heatmap_gt(p(2), p(1)) = abs(incomplete_matte(p(2), p(1)) - matte(p(2), p(1)));
 
-        subplot(2,2,1); imshow(shad); hold on; c_descr.draw(); hold off;
-        subplot(2,2,2); imshow(plain); hold on; descrs(best_descr).draw(); hold off;
-
-        subplot(2,2,3); plot(c_descr.slices_shad(1,:));
-        subplot(2,2,4); plot(descrs(best_descr).slices_shad(1,:));
+        subplot(2,1,1); imshow(shad); hold on; c_descr.draw('r'); descrs(best_descr).draw('b'); hold off;
+        subplot(2,1,2); plot(c_descr.slices_shad(1,:), 'r'); hold on; plot(descrs(best_descr).slices_shad(1,:), 'b'); hold off;
     end
     hold off;
     slice_errs = slice_errs ./ max(max(slice_errs));

@@ -1,5 +1,5 @@
 function saveDescriptors(shad, noshad)
-    img_date = '2011-05-03';
+    img_date = '2011-05-16';
     if nargin ~= 2
         shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\', img_date, '\', img_date, '_plain_shad.tif']);
         noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_noshad.tif']);
@@ -17,7 +17,7 @@ function saveDescriptors(shad, noshad)
     
     matte = shad ./ noshad;
     
-    n_angles = 1;
+    n_angles = 9;
     len = 20;
     n_descrs = 1000;
     
@@ -42,6 +42,6 @@ function saveDescriptors(shad, noshad)
 %         drawDescr(matte, descrs{n});
     end
     
-    drawDescr(shad, descrs);
+%     drawDescr(shad, descrs);
     save('descrs.mat', 'descrs');
 end

@@ -9,6 +9,8 @@
 # Matlab #
 *.mat
 *.asv
+*.mexw64
+*.mexw32
 
 # Maya #
 *.mb
