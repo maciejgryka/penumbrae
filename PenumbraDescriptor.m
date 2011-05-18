@@ -80,7 +80,7 @@ classdef PenumbraDescriptor
         end
         
         function d = setSliceShad(d, i, slice)
-            d.slices_shad(i,:) = NaN;
+            d.slices_shad(i,:) = 0;
             if length(slice) > length(d.slices_shad(i, :))+1
                 error('Slice too long, cannot set.');
             end
@@ -88,7 +88,7 @@ classdef PenumbraDescriptor
         end
         
         function d = setSliceMatte(d, i, slice)
-            d.slices_matte(i,:) = NaN;
+            d.slices_matte(i,:) = 0;
             if length(slice) > length(d.slices_matte(i, :))+1
                 error('Slice too long, cannot set.');
             end

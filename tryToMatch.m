@@ -7,14 +7,19 @@ function tryToMatch()
     shad = shad(:,:,1);
     noshad = noshad(:,:,1);
 
+    if isa(shad, 'uint8')
+        shad = double(shad)/255;
+        noshad = double(noshad)/255;
+    end
+
     matte = shad ./ noshad;
 
     w = size(matte, 2);
     h = size(matte, 1);
     
     n_angles = 1;
-    len = 30;
-    n_descrs = 5000;
+    len = 20;
+    n_descrs = 2000;
     
     k = 1;
 
@@ -24,7 +29,7 @@ function tryToMatch()
     p_pix = find(penumbra_mask == 1);   % penumbra pixels
 
     incomplete_matte = zeros(h, w);
-    load('descrs.mat');
+    load('descrs_small_all.mat');
     
     build_params.target_precision = 0.9;
     build_params.build_weight = 0.01;

@@ -15,14 +15,20 @@ function drawMatches()
     n_angles = 3;
     len = 100;
     n_descrs = 100;
-    load('descrs.mat');
+    load('descrs_small_all.mat');
     cols = ['g' 'b' 'c' 'm' 'y' 'w'];
     
-    k = 6;
+    build_params.target_precision = 0.9;
+    build_params.build_weight = 0.01;
+    build_params.memory_weight = 0;
+    [index, parameters] = flann_build_index(slices_shad', build_params);
+    
+    k = 5;
     
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
     penumbra_mask = matte_abs_grad > 0;
+    p_pix = find(penumbra_mask == 1);   % penumbra pixels
     
     for n = 1:n_descrs
         p = getRandomImagePoint(shad);
