@@ -1,26 +1,11 @@
 function tryToMatch()
     % clear all
     img_date = '2011-05-16';
-    shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad.tif']);
-    noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad.tif']);
-
-%     plain = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_shad.tif']);
-%     plain_noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_plain_noshad.tif']);
-    
+    shad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_shad_small.tif']);
+    noshad = imread(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date '_rough4_noshad_small.tif']);
+  
     shad = shad(:,:,1);
     noshad = noshad(:,:,1);
-
-%     shad = shad(150:249, 370:469);
-%     noshad = noshad(150:249, 370:469);
-%     plain = plain(150:249, 370:469);
-%     plain_noshad = plain_noshad(150:249, 370:469);
-    
-%     shad = plain;
-%     noshad = plain_noshad;
-
-    % hsize = [50, 50];
-    % shad = imfilter(shad, fspecial('gaussian', hsize, 20), 'replicate');
-    % noshad = imfilter(noshad, fspecial('gaussian', hsize, 20), 'replicate');
 
     matte = shad ./ noshad;
 
@@ -81,15 +66,15 @@ function tryToMatch()
     subplot(2,2,4);
     imshow(shad./noshad);
     
-    heatmap = zeros(h, w);
-    figure; 
-    imshow(heatmap);hold on;
-    for d = 1:n_descrs
-        for s = 1:length(descrs(1).slices_shad)
-            plot(descrs(good_descrs(d)).points(s, 1:2, 1), ... 
-                 descrs(good_descrs(d)).points(s, 1:2, 2), ...
-                 'color', [slice_errs(d, s), slice_errs(d, s), slice_errs(d, s)]);
-        end
-    end
-    hold off;
+%     heatmap = zeros(h, w);
+%     figure; 
+%     imshow(heatmap);hold on;
+%     for d = 1:n_descrs
+%         for s = 1:length(descrs(1).slices_shad)
+%             plot(descrs(good_descrs(d)).points(s, 1:2, 1), ... 
+%                  descrs(good_descrs(d)).points(s, 1:2, 2), ...
+%                  'color', [slice_errs(d, s), slice_errs(d, s), slice_errs(d, s)]);
+%         end
+%     end
+%     hold off;
 end
