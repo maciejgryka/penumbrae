@@ -2,7 +2,6 @@ classdef PenumbraDescriptor
     properties
         center
         center_pixel
-        orientation
         slices_matte
         slices_shad
 %         patch_matte
@@ -16,7 +15,6 @@ classdef PenumbraDescriptor
             if nargin==0
                 d.center = 0;
                 d.center_pixel = 0;
-                d.orientation = 0;
                 d.slices_matte = 0;
                 d.slices_shad = 0;
                 d.center_inds = 0;
@@ -34,7 +32,7 @@ classdef PenumbraDescriptor
             % dsim is the image according to which the descriptor is
             % constructed (orientation and penumbra boundaries are taken
             % from it); we want to use ground-truth matte at training
-            dsim = [];
+%             dsim = [];
             
             if exist('matte', 'var') && ~isempty(matte)
                 d.slices_matte = zeros(n_angles, len+1);
@@ -47,20 +45,18 @@ classdef PenumbraDescriptor
             
             hl = len/2; % half length
 
-            bounds = [pixel(1)-hl; pixel(2)-hl; pixel(1)+hl; pixel(2)+hl];
-            bounds(1:2) = checkImBounds(bounds(1:2), size(dsim));
-            bounds(3:4) = checkImBounds(bounds(3:4), size(dsim));
+%             bounds = [pixel(1)-hl; pixel(2)-hl; pixel(1)+hl; pixel(2)+hl];
+%             bounds(1:2) = checkImBounds(bounds(1:2), size(dsim));
+%             bounds(3:4) = checkImBounds(bounds(3:4), size(dsim));
 
-            patch = dsim(bounds(2):bounds(4), bounds(1):bounds(3));
-%             d.orientation = dominantGradientDir(patch);
-            d.orientation = 0;
+%             patch = dsim(bounds(2):bounds(4), bounds(1):bounds(3));
 
             ang_step = pi/n_angles;
             slice_index = 0;
 
             for ang = 0:ang_step:pi-ang_step
                 slice_index = slice_index+1;
-                [pixel_offset(1) pixel_offset(2)] = pol2cart(d.orientation+ang, hl);
+                [pixel_offset(1) pixel_offset(2)] = pol2cart(ang, hl);
                 
                 [d.points(slice_index, 1, :) d.points(slice_index, 2, :)] = ...
                     processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset, penumbra_mask);
@@ -80,19 +76,19 @@ classdef PenumbraDescriptor
         end
         
         function d = setSliceShad(d, i, slice)
-            d.slices_shad(i,:) = NaN;
+            d.slices_shad(i,:) = 0;
             if length(slice) > length(d.slices_shad(i, :))+1
                 error('Slice too long, cannot set.');
             end
-            d.slices_shad(i, 1:length(slice)) = slice;
+            d.slices_shad(i, 1:length(slice)) = gradient(slice);
         end
         
         function d = setSliceMatte(d, i, slice)
-            d.slices_matte(i,:) = NaN;
+            d.slices_matte(i,:) = 0;
             if length(slice) > length(d.slices_matte(i, :))+1
                 error('Slice too long, cannot set.');
             end
-            d.slices_matte(i, 1:length(slice)) = slice;
+            d.slices_matte(i, 1:length(slice)) = gradient(slice);
         end
         
         function slice = getSliceShad(d, i)
@@ -140,7 +136,7 @@ function [p1, p2] = processSlice(im, p1, p2, penumbra_mask)
     end
     
     % ensure that the profile is rising (reverse points if it's not)
-    [p1, p2] = ensureProfileRising(im, p1, p2);
+%     [p1, p2] = ensureProfileRising(im, p1, p2);
 
     if isempty(p1) || isempty(p2)
         error('p1 or p2 empty');
@@ -167,14 +163,14 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2, penumbra_mask)
     % list valid points
     vp = round([cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)]);
     
-    % list of points within penumbra
-    % TODO: bug - if there are two penumbra regions, the pixels in between
-    % are included too
-    for row = 1:size(vp,1)
-        if penumbra_mask(vp(row,2), vp(row,1)) == 0
-            vp(row, :) = [0, 0];
-        end
-    end
+%     % list of points within penumbra
+%     % TODO: bug - if there are two penumbra regions, the pixels in between
+%     % are included too
+%     for row = 1:size(vp,1)
+%         if penumbra_mask(vp(row,2), vp(row,1)) == 0
+%             vp(row, :) = [0, 0];
+%         end
+%     end
     
     vpx = vp(:,1);
     vpy = vp(:,2);
