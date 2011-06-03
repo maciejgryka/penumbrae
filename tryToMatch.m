@@ -26,7 +26,9 @@ function tryToMatch()
     for n = 1:n_descrs
         c_descr = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, penumbra_mask);
 
-        [best_descrs dists] = flann_search(index,(c_descr.slices_shad)',k,parameters);
+%         [best_descrs dists] = flann_search(index,(c_descr.slices_shad)',k,parameters);
+        [best_descrs dists] = knnsearch(slices_shad',(c_descr.slices_shad),'K', k);
+        
         best_descr = best_descrs(1);
         if best_descr < 1 || best_descr > size(slices_shad,2)
             continue;
