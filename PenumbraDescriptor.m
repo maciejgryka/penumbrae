@@ -42,7 +42,7 @@ classdef PenumbraDescriptor
                 [pixel_offset(1) pixel_offset(2)] = pol2cart(ang, hl);
                 
                 [d.points(slice_index, 1, :) d.points(slice_index, 2, :)] = ...
-                    processSlice(dsim, pixel + pixel_offset,  pixel - pixel_offset);
+                    processSlice(dsim, pixel - pixel_offset,  pixel + pixel_offset);
                 if isnan(d.points(slice_index, 1, :))
                     d.points = NaN;
                     return;

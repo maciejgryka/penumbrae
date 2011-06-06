@@ -6,7 +6,7 @@ function tryToMatch()
     incomplete_matte = ones(h, w);
     load('descrs_small_all.mat');
     
-    k = 3;
+    k = 1;
     
     error_gt = zeros(n_descrs, 1);
     error_gt_img = zeros(size(shad));

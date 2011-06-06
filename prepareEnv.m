@@ -10,19 +10,22 @@ function [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = p
     
     n_angles = 1;
     len = 20;
-    n_descrs = 1000;
     
     [dx dy] = gradient(matte);
     matte_abs_grad = abs(dx) + abs(dy);
     penumbra_mask = matte_abs_grad > 0;
 %     penumbra_mask(:,[1:len, size(shad,2)-len:size(shad,2)]) = 0;
 %     p_pix = find(penumbra_mask' == 1);   % penumbra pixels
-    [penumbra_mask p_pix] = getPenumbraMaskAtScale(penumbra_mask, len);
+    penumbra_mask = getPenumbraMaskAtScale(penumbra_mask, len);
     
-%     % double p_pix (there are two images with the same penumbra regions)
-%     p_pix = repmat(p_pix, 2, 1);
+    % pad the images with zero-borders of width len
+    shad = addZeroBorders(shad, len);
+    noshad = addZeroBorders(noshad, len);
+    matte = addZeroBorders(matte, len);
+    penumbra_mask = addZeroBorders(penumbra_mask, len);
     
     % all pixels within penumbra
+    p_pix = find(penumbra_mask' == 1);
     [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask'), p_pix);
     n_descrs = length(p_pix);
     
