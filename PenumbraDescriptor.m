@@ -3,7 +3,9 @@ classdef PenumbraDescriptor
         center
         center_pixel
         slices_matte
+        slices_matte_cat
         slices_shad
+        slices_shad_cat
         points
     end
     
@@ -54,6 +56,11 @@ classdef PenumbraDescriptor
                 if exist('matte', 'var')
                     d = d.setSliceMatte(slice_index, improfile(matte, d.points(slice_index, :, 1), d.points(slice_index, :, 2)));
                 end
+            end
+            % concatenate the slices into one vector for easy knn lookup
+            d.slices_shad_cat = reshape(d.slices_shad', n_angles*(len+1), 1)';
+            if exist('matte', 'var')
+                d.slices_matte_cat = reshape(d.slices_matte', n_angles*(len+1), 1)';
             end
         end
         

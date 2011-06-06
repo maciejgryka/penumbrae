@@ -1,8 +1,8 @@
 function drawMatches()
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough4');
+    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough1');
     load('descrs_small_all.mat');
     
-    k = 5;
+    k = 2;
     
 %     error_gt = zeros(n_descrs, 1);
 %     error_gt_img = zeros(size(shad));
@@ -14,7 +14,7 @@ function drawMatches()
     for n = 1:n_descrs
         c_descr = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, penumbra_mask);
         
-        [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descr.slices_shad),'K', k);
+        [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descr.slices_shad_cat),'K', k);
 
         subplot(2,2,1:2); imshow(shad); hold on; c_descr.draw('r');
 
@@ -34,13 +34,17 @@ function drawMatches()
 %                                       descrs(best_descr(1)).slices_shad{1}, ...
 %                                       c_descr.center_inds(1), ...
 %                                       descrs(best_descr(1)).center_inds(1));
-        s1 = c_descr.slices_shad;
-        s2 = descrs(best_descrs(1)).slices_shad;
-        s3 = improfile(matte, c_descr.points(1,:,1), c_descr.points(1,:,2));
-        plot((s1), 'r'); hold on;
-        plot((s2), 'g');
-        plot(gradient(s3), 'b'); hold off;
-%         subplot(2,2,4);
+        s1 = c_descr.slices_shad_cat;
+        s2 = descrs(best_descrs(1)).slices_shad_cat;
+%         s3 = descrs(n+n_descrs).slices_shad_cat;
+        plot(s1, 'r'); hold on;
+        plot(s2, 'g');
+%         plot(s3, 'b'); 
+        hold off;
+        subplot(2,2,4);
+        imshow(matte);
+%         hold on;
+%         descrs(n+n_descrs).draw('b');
 %         plot((error_gt), 'g'); hold on;
 %         plot((inconsistency), 'b'); hold off;
     end

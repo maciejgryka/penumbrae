@@ -1,12 +1,12 @@
 function tryToMatch()
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough4');
+    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough1');
 
     w = size(matte, 2);
     h = size(matte, 1);
     incomplete_matte = ones(h, w);
     load('descrs_small_all.mat');
     
-    k = 1;
+    k = 5;
     
     error_gt = zeros(n_descrs, 1);
     error_gt_img = zeros(size(shad));
@@ -17,7 +17,7 @@ function tryToMatch()
     for n = 1:length(p_pix)
         c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
     end
-    [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descrs(:).slices_shad),'K', k);
+    [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descrs(:).slices_shad_cat),'K', k);
 
     % matte values for all test set descriptors
     matte_vals = cat(1,descrs(:).center_pixel);

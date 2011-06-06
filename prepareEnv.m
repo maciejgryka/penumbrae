@@ -8,14 +8,15 @@ function [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = p
     
     matte = shad ./ noshad;
     
-    n_angles = 1;
-    len = 20;
+    n_angles = 3;
+    len = 30;
     
-    [dx dy] = gradient(matte);
-    matte_abs_grad = abs(dx) + abs(dy);
-    penumbra_mask = matte_abs_grad > 0;
+%     [dx dy] = gradient(matte);
+%     matte_abs_grad = abs(dx) + abs(dy);
+%     penumbra_mask = matte_abs_grad > 0;
 %     penumbra_mask(:,[1:len, size(shad,2)-len:size(shad,2)]) = 0;
 %     p_pix = find(penumbra_mask' == 1);   % penumbra pixels
+    load('penumbra_mask.mat');
     penumbra_mask = getPenumbraMaskAtScale(penumbra_mask, len);
     
     % pad the images with zero-borders of width len
