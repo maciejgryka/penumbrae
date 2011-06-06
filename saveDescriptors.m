@@ -1,7 +1,6 @@
 function saveDescriptors(shad, noshad)
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', '_plain');
-    rough = imread(['C:\Work\research\shadow_removal\penumbrae\images\2011-05-16\2011-05-16_rough4_shad.tif']);
-    rough = rough(:,:,1);
+    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'plain');
+    rough = readSCDIm('C:\Work\research\shadow_removal\penumbrae\images\2011-05-16\2011-05-16_rough4_shad.tif');
     rough = rough(150:199, 370:459);
     
     descrs = repmat(PenumbraDescriptor(), n_descrs*2, 1);
@@ -10,9 +9,9 @@ function saveDescriptors(shad, noshad)
 %         [pixel(2) pixel(1)] = ind2sub(size(penumbra_mask), p_pix(round(length(p_pix)*rand()+0.5)));
 
         if n <= n_descrs
-            descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, penumbra_mask, matte);
+            descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, matte);
         else
-            descrs(n) = PenumbraDescriptor(rough, pixel(n-n_descrs,:), n_angles, len, penumbra_mask, matte);
+            descrs(n) = PenumbraDescriptor(rough, pixel(n-n_descrs,:), n_angles, len, matte);
         end
         
         if isnan(descrs(n).points)
@@ -24,12 +23,12 @@ function saveDescriptors(shad, noshad)
     % big matrix with dimensions M-by-N where
     % M = n_descrs*n_angles
     % N = len
-    slices_shad = (cat(1,descrs(:).slices_shad))';
-    slices_matte = (cat(1,descrs(:).slices_matte))';
-    center_pixels = cat(1,descrs(:).center_pixel)';
+    slices_shad = (cat(1,descrs(:).slices_shad));
+    slices_matte = (cat(1,descrs(:).slices_matte));
+    center_pixels = cat(1,descrs(:).center_pixel);
     
     n_descrs = n_descrs*2;
     
-%     drawDescr(shad, descrs);
+    drawDescr(shad, descrs);
     save('descrs_small_all.mat', 'descrs', 'slices_shad', 'slices_matte', 'center_pixels');
 end
