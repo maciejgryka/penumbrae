@@ -1,12 +1,12 @@
 function tryToMatch()
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough1');
+    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'plain');
 
     w = size(matte, 2);
     h = size(matte, 1);
     incomplete_matte = ones(h, w);
     load('descrs_small_all.mat');
     
-    k = 5;
+    k = 1;
     
     error_gt = zeros(n_descrs, 1);
     error_gt_img = zeros(size(shad));

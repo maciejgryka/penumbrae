@@ -9,7 +9,7 @@ function [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = p
     matte = shad ./ noshad;
     
     n_angles = 3;
-    len = 30;
+    len = 10;
     
 %     [dx dy] = gradient(matte);
 %     matte_abs_grad = abs(dx) + abs(dy);

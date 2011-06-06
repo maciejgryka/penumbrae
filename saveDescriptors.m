@@ -4,28 +4,39 @@ function saveDescriptors(shad, noshad)
     rough = rough(150:199, 370:459);
     rough = addZeroBorders(rough, len);
     
-    descrs = repmat(PenumbraDescriptor(), n_descrs*2, 1);
+    n_ims = 2;
     
-    for n = 1:n_descrs*2
-%         [pixel(2) pixel(1)] = ind2sub(size(penumbra_mask), p_pix(round(length(p_pix)*rand()+0.5)));
-
-        if n <= n_descrs
-            descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, matte);
-        else
-            descrs(n) = PenumbraDescriptor(rough, pixel(n-n_descrs,:), n_angles, len, matte);
-        end
-        
-        if isnan(descrs(n).points)
-            error('d.points = NaN');
+    % cell containing in each row an image from which to caluclate 
+    % descriptors as well as list of pixel coords at which the descriptors
+    % should be centered
+    shadmatte = cell(n_ims, 2);
+    shadmatte{1,1} = shad;
+    shadmatte{1,2} = pixel;
+    shadmatte{2,1} = rough;
+    shadmatte{2,2} = pixel;
+    
+    descrs = repmat(PenumbraDescriptor(), size(cat(1, shadmatte{:,2}), 1), 1);
+    
+    curr_descr = 1;
+    for i = 1:n_ims
+        fprintf('Computing descriptors for image %i...\n', i);
+        for p = 1:length(p_pix)
+            descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte);
+            
+            if isnan(descrs(curr_descr).points)
+                error('d.points = NaN');
+            end
+            curr_descr = curr_descr+1;
         end
     end
     
+    fprintf('Concatenating slices...\n');
     % concatenate slices_shad and slices_matte arrays and put the in one 
     % big matrix
     slices_shad = (cat(1,descrs(:).slices_shad_cat));
     slices_matte = (cat(1,descrs(:).slices_matte_cat));
     center_pixels = cat(1,descrs(:).center_pixel);
     
-    drawDescr(shad, descrs);
+%     drawDescr(shad, descrs);
     save('descrs_small_all.mat', 'descrs', 'slices_shad', 'slices_matte', 'center_pixels');
 end
