@@ -1,4 +1,4 @@
-function [shad noshad matte penumbra_mask n_angles len] = prepareEnv(date, suffix)
+function [shad noshad matte penumbra_mask n_angles] = prepareEnv(date, suffix)
     img_date = date;
     shad = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\', img_date, '\', img_date, '_', suffix, '_shad.tif']);
     noshad = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date, '_', suffix, '_noshad.tif']);
@@ -19,12 +19,6 @@ function [shad noshad matte penumbra_mask n_angles len] = prepareEnv(date, suffi
 %     p_pix = find(penumbra_mask' == 1);   % penumbra pixels
     load('penumbra_mask.mat');
 %     penumbra_mask = getPenumbraMaskAtScale(penumbra_mask, len);
-    
-    % pad the images with zero-borders of width len
-    shad = addZeroBorders(shad, len);
-    noshad = addZeroBorders(noshad, len);
-    matte = addZeroBorders(matte, len);
-    penumbra_mask = addZeroBorders(penumbra_mask, len);
     
 %     % all pixels within penumbra
 %     p_pix = find(penumbra_mask' == 1);

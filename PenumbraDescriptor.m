@@ -123,8 +123,8 @@ function [p1, p2] = getSliceWithinImage(im, p1, p2)
     [cx, cy, c] = improfile(im, [p1(1) p2(1)], [p1(2) p2(2)]);
     
     % get coords within image boundary
-    cx_valid = cx >= 1 & cx <= size(im,2);
-    cy_valid = cy >= 1 & cy <= size(im,1);
+    cx_valid = round(cx) >= 1 & round(cx) <= size(im,2);
+    cy_valid = round(cy) >= 1 & round(cy) <= size(im,1);
 
     % list of valid points
     vp = round([cx(cx_valid & cy_valid) cy(cx_valid & cy_valid)]);
