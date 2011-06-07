@@ -2,8 +2,8 @@ classdef PenumbraDescriptor
     properties
         center
         center_pixel
-        slices_matte
-        slices_matte_cat
+%         slices_matte
+%         slices_matte_cat
         slices_shad
         slices_shad_cat
         points
@@ -15,7 +15,7 @@ classdef PenumbraDescriptor
             if nargin==0
                 d.center = 0;
                 d.center_pixel = 0;
-                d.slices_matte = 0;
+%                 d.slices_matte = 0;
                 d.slices_shad = 0;
                 d.points = 0;
                 return
@@ -27,7 +27,7 @@ classdef PenumbraDescriptor
             d.slices_shad = zeros(n_angles, len+1);
 
             if exist('matte', 'var') && ~isempty(matte)
-                d.slices_matte = zeros(n_angles, len+1);
+%                 d.slices_matte = zeros(n_angles, len+1);
                 dsim = matte;
                 d.center_pixel = matte(pixel(2), pixel(1));
             else
@@ -53,15 +53,15 @@ classdef PenumbraDescriptor
                 sl = improfile(shad, d.points(slice_index, :, 1), d.points(slice_index, :, 2));
                 d = d.setSliceShad(slice_index, sl);
                 
-                if exist('matte', 'var')
-                    d = d.setSliceMatte(slice_index, improfile(matte, d.points(slice_index, :, 1), d.points(slice_index, :, 2)));
-                end
+%                 if exist('matte', 'var')
+%                     d = d.setSliceMatte(slice_index, improfile(matte, d.points(slice_index, :, 1), d.points(slice_index, :, 2)));
+%                 end
             end
             % concatenate the slices into one vector for easy knn lookup
             d.slices_shad_cat = reshape(d.slices_shad', n_angles*(len+1), 1)';
-            if exist('matte', 'var')
-                d.slices_matte_cat = reshape(d.slices_matte', n_angles*(len+1), 1)';
-            end
+%             if exist('matte', 'var')
+%                 d.slices_matte_cat = reshape(d.slices_matte', n_angles*(len+1), 1)';
+%             end
         end
         
         function d = setSliceShad(d, i, slice)
@@ -72,23 +72,23 @@ classdef PenumbraDescriptor
             d.slices_shad(i, 1:length(slice)) = gradient(slice);
         end
         
-        function d = setSliceMatte(d, i, slice)
-            d.slices_matte(i,:) = 0;
-            if length(slice) > length(d.slices_matte(i, :))+1
-                error('Slice too long, cannot set.');
-            end
-            d.slices_matte(i, 1:length(slice)) = gradient(slice);
-        end
+%         function d = setSliceMatte(d, i, slice)
+%             d.slices_matte(i,:) = 0;
+%             if length(slice) > length(d.slices_matte(i, :))+1
+%                 error('Slice too long, cannot set.');
+%             end
+%             d.slices_matte(i, 1:length(slice)) = gradient(slice);
+%         end
         
         function slice = getSliceShad(d, i)
             slice = d.slices_shad(i, :);
             slice = slice(~isnan(slice));
         end
         
-        function slice = getSliceMatte(d, i)
-            slice = d.slices_matte(i, :);
-            slice = slice(~isnan(slice));
-        end
+%         function slice = getSliceMatte(d, i)
+%             slice = d.slices_matte(i, :);
+%             slice = slice(~isnan(slice));
+%         end
         
         function draw(d, plot_color)
             if ~exist('plot_color', 'var')

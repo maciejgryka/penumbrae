@@ -1,16 +1,12 @@
 function tryToMatch()
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'plain');
+    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough4');
 
     w = size(matte, 2);
     h = size(matte, 1);
-    incomplete_matte = ones(h, w);
+    recovered_matte = ones(h, w);
     load('descrs_small_all.mat');
     
     k = 1;
-    
-    error_gt = zeros(n_descrs, 1);
-    error_gt_img = zeros(size(shad));
-    nn_matte_std = zeros(size(shad));
 
     c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
     
@@ -20,10 +16,7 @@ function tryToMatch()
     [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descrs(:).slices_shad_cat),'K', k);
 
     % matte values for all test set descriptors
-    matte_vals = cat(1,descrs(:).center_pixel);
-    
-    % get suggested matte from each neighbor
-    nn_mattes = matte_vals(best_descrs);
+    nn_mattes = cat(1,descrs(best_descrs).center_pixel);
 
     % distance-based weights for each neighbor
     if k == 1
@@ -37,25 +30,15 @@ function tryToMatch()
 
     % weighted average of suggested mattes
     weighted_matte = sum(nn_mattes .* weights, 2);
-    incomplete_matte(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = weighted_matte;
-%         error_gt(n) = abs(weighted_matte - matte(pixel(n,2), pixel(n,1)));
-%         error_gt_img(c_descrs(n).center(2), c_descrs(n).center(1)) = error_gt(n);
-%      	nn_matte_std(c_descrs(n).center(2), c_descrs(n).center(1)) = std(nn_mattes);
-%         
-%         incomplete_matte = reconstructMatte(incomplete_matte, pixel(n,:), weighted_matte);
-        
-%         imshow(shad); hold on; c_descr.draw('r');
-%         matte(pixel(n,2), pixel(n,1)) - weighted_matte
-%     end
-%     imagesc(error_gt_img);
-%     figure; imagesc(nn_matte_std);
-    matte = incomplete_matte;
+    recovered_matte(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = weighted_matte;
+    
+%     recovered_matte;
     subplot(2,2,1);
     imshow(shad);
     subplot(2,2,2);
-    imshow(matte);
+    imshow(recovered_matte);
     subplot(2,2,3);
-    imshow(shad ./ matte);
+    imshow(shad ./ recovered_matte);
     subplot(2,2,4);
-    imshow(shad./noshad);
+    imshow(matte);
 end
