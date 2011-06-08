@@ -22,7 +22,7 @@ function saveDescriptors(shad, noshad)
         rough_s = addBorders(rough, len);
         noshad_s = addBorders(noshad, len);
         matte_s = addBorders(matte, len);
-        penumbra_mask_s = addBorders(penumbra_mask_s, len);
+        penumbra_mask_s = addBorders(penumbra_mask, len);
                 
         % get pixels where descriptors at given sale can be calculated
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, sc);
@@ -54,7 +54,7 @@ function saveDescriptors(shad, noshad)
         fprintf('\tconcatenating slices...\n');
         % concatenate slices_shad and slices_matte arrays and put the in one 
         % big matrix
-        slices_shad = (cat(1,descrs(:).slices_shad_cat));
+        slices_shad = (cat(1,descrs(:).spokes));
         center_pixels = cat(1,descrs(:).center_pixel);
 
     %     drawDescr(shad, descrs);

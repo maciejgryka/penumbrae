@@ -23,12 +23,14 @@ classdef PenumbraDescriptor
             else
                 d.center_pixel = NaN;
             end
+            
+            hl = floor(len/2); % half length
+            
             % each spoke has two endpoints: d.center and one of d.points
             % there are two spokes at each angle
             d.points = zeros(2*n_angles, 2);
-            d.spokes = zeros(n_angles, len+1);
+            d.spokes = zeros(n_angles*2, hl+1);
             
-            hl = len/2; % half length
 
             ang_step = pi/n_angles;
             spoke_index = 1;
@@ -38,15 +40,15 @@ classdef PenumbraDescriptor
                 d.points(spoke_index, :) = d.center - pixel_offset;
                 d.points(spoke_index+1, :) = d.center + pixel_offset;
 
-                d = d.fillSpoke(d, shad, spoke_index);
-                d = d.fillSpoke(d, shad, spoke_index+1);
+                d = d.fillSpoke(shad, spoke_index);
+                d = d.fillSpoke(shad, spoke_index+1);
 
                 spoke_index = spoke_index + 2;
             end
         end
         
         function d = fillSpoke(d, im, sp)
-            d.spokes(sp,:) = improfile(im, d.center, d.points(sp, :));
+            d.spokes(sp,:) = improfile(im, d.center, d.points(sp, :), length(d.spokes(sp,:)));
         end
         
         function d = setSliceShad(d, i, slice)
