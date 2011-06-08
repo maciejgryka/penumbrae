@@ -1,15 +1,15 @@
 function tryToMatch()
-    [shad noshad matte penumbra_mask n_angles] = prepareEnv('2011-05-16', 'rough4');
+    [shad noshad matte penumbra_mask n_angles] = prepareEnv('2011-05-16', 'rough1');
 
     scales = [3, 5, 10, 20, 50, 100];
-    scales = [10];
+%     scales = [10]3;
     
     w = size(matte, 2);
     h = size(matte, 1);
     
     k = 1;
     
-    mattes = zeros(h, w, length(scales));
+    mattes = cell(length(scales));
 
     for sc = 1:length(scales)
         fprintf('Computing matte at scale %i...\n', scales(sc));
@@ -57,7 +57,7 @@ function tryToMatch()
         weighted_matte = sum(nn_mattes .* weights, 2);
         recovered_matte(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = weighted_matte;
 
-        mattes(:,:,sc) = recovered_matte;
+        mattes{sc} = recovered_matte;
     %     recovered_matte;
 %         subplot(2,2,1);
 %         imshow(shad_s);
