@@ -17,16 +17,15 @@ function saveDescriptors(shad, noshad)
         fprintf('Computing descriptors at scale %i...\n', scales(sc));
         len = scales(sc);
         
-        % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, sc);
-        
         % pad the images with zero-borders of width len
-        shad_s = addZeroBorders(shad, len);
-        rough_s = addZeroBorders(rough, len);
-        noshad_s = addZeroBorders(noshad, len);
-        matte_s = addZeroBorders(matte, len);
-        penumbra_mask_s = addZeroBorders(penumbra_mask_s, len);
-        
+        shad_s = addBorders(shad, len);
+        rough_s = addBorders(rough, len);
+        noshad_s = addBorders(noshad, len);
+        matte_s = addBorders(matte, len);
+        penumbra_mask_s = addBorders(penumbra_mask_s, len);
+                
+        % get pixels where descriptors at given sale can be calculated
+        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, sc);
         p_pix = find(penumbra_mask_s' == 1);
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);

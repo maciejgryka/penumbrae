@@ -22,11 +22,11 @@ function tryToMatch()
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, sc);
         
         % pad the images with zero-borders of width len
-        shad_s = addZeroBorders(shad, len);
-        noshad_s = addZeroBorders(noshad, len);
-        matte_s = addZeroBorders(matte, len);
-        penumbra_mask_s = addZeroBorders(penumbra_mask_s, len);
-        recovered_matte = addZeroBorders(ones(h, w), len);
+        shad_s = addBorders(shad, len);
+        noshad_s = addBorders(noshad, len);
+        matte_s = addBorders(matte, len);
+        penumbra_mask_s = addBorders(penumbra_mask_s, len);
+        recovered_matte = addBorders(ones(h, w), len);
         recovered_matte = ones(size(recovered_matte));
         
         p_pix = find(penumbra_mask_s' == 1);
