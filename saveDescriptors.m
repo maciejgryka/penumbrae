@@ -12,8 +12,6 @@ function saveDescriptors(shad, noshad)
     % descriptors as well as list of pixel coords at which the descriptors
     % should be centered
     shadmatte = cell(n_ims, 2);
-    shadmatte{1,1} = shad;
-    shadmatte{2,1} = rough;
     
     for sc = 1:length(scales)
         fprintf('Computing descriptors at scale %i...\n', scales(sc));
@@ -21,17 +19,20 @@ function saveDescriptors(shad, noshad)
         
         % get pixels where descriptors at given sale can be calculated
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, sc);
+        
+        % pad the images with zero-borders of width len
+        shad_s = addZeroBorders(shad, len);
+        rough_s = addZeroBorders(rough, len);
+        noshad_s = addZeroBorders(noshad, len);
+        matte_s = addZeroBorders(matte, len);
+        penumbra_mask_s = addZeroBorders(penumbra_mask_s, len);
+        
         p_pix = find(penumbra_mask_s' == 1);
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
-        
-        % pad the images with zero-borders of width len
-        shad = addZeroBorders(shad, len);
-        rough = addZeroBorders(rough, len);
-        noshad = addZeroBorders(noshad, len);
-        matte = addZeroBorders(matte, len);
-        penumbra_mask = addZeroBorders(penumbra_mask, len);
-        
+            
+        shadmatte{1,1} = shad_s;
+        shadmatte{2,1} = rough_s;
         shadmatte{1,2} = pixel;
         shadmatte{2,2} = pixel;
         
@@ -42,7 +43,7 @@ function saveDescriptors(shad, noshad)
         for i = 1:n_ims
             fprintf('\timage %i...\n', i);
             for p = 1:length(p_pix)
-                descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte);
+                descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte_s);
 
                 if isnan(descrs(curr_descr).points)
                     error('d.points = NaN');
