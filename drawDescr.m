@@ -6,10 +6,7 @@ function drawDescr(im, descrs, plotstyle)
     end
 %     if iscell(descrs)
         for d = 1:length(descrs)
-            plot(descrs(d).center(1), descrs(d).center(2), 'or', 'MarkerSize', 5);
-            for s = 1:size(descrs(d).slices_shad, 1)
-                plot(descrs(d).points(s, :, 1), descrs(d).points(s, :, 2), plotstyle);
-            end
+            descrs(d).draw();
         end
 %     elseif strcmp(class(descrs), 'PenumbraDescriptor')
 %         plot(descrs.center(1), descrs.center(2), 'or', 'MarkerSize', 5);

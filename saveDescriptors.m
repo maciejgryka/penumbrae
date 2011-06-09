@@ -1,12 +1,9 @@
 function saveDescriptors(shad, noshad)
-    [shad noshad matte penumbra_mask n_angles] = prepareEnv('2011-05-16', 'plain');
+    [shad noshad matte penumbra_mask n_angles scales] = prepareEnv('2011-05-16', 'plain');
     rough = readSCDIm('C:\Work\research\shadow_removal\penumbrae\images\2011-05-16\2011-05-16_rough4_shad.tif');
     rough = rough(150:199, 370:459);
     
     n_ims = 2;
-    
-    scales = [3, 5, 10, 20, 50, 100];
-%     scales = [10];
     
     % cell containing in each row an image from which to caluclate 
     % descriptors as well as list of pixel coords at which the descriptors
@@ -20,13 +17,17 @@ function saveDescriptors(shad, noshad)
         % pad the images with zero-borders of width len
         shad_s = addBorders(shad, len);
         rough_s = addBorders(rough, len);
-        noshad_s = addBorders(noshad, len);
+%         noshad_s = addBorders(noshad, len);
         matte_s = addBorders(matte, len);
         penumbra_mask_s = addBorders(penumbra_mask, len);
                 
         % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, sc);
+        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, scales(sc));
         p_pix = find(penumbra_mask_s' == 1);
+        if (isempty(p_pix))
+            fprintf('\tno descriptors and this scale\n');
+            continue;
+        end
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
             
@@ -44,9 +45,6 @@ function saveDescriptors(shad, noshad)
             for p = 1:length(p_pix)
                 descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte_s);
 
-                if isnan(descrs(curr_descr).points)
-                    error('d.points = NaN');
-                end
                 curr_descr = curr_descr+1;
             end
         end
@@ -54,11 +52,11 @@ function saveDescriptors(shad, noshad)
         fprintf('\tconcatenating slices...\n');
         % concatenate slices_shad and slices_matte arrays and put the in one 
         % big matrix
-        slices_shad = (cat(1,descrs(:).spokes));
+        spokes = (cat(1,descrs(:).spokes));
         center_pixels = cat(1,descrs(:).center_pixel);
 
-    %     drawDescr(shad, descrs);
+%         drawDescr(shad, descrs);
         fprintf('\tsaving results...\n');
-        save(['descrs_small_' int2str(scales(sc)), '.mat'], 'descrs', 'slices_shad', 'center_pixels');
+        save(['descrs_small_' int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'center_pixels');
     end
 end

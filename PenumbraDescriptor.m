@@ -48,7 +48,7 @@ classdef PenumbraDescriptor
         end
         
         function d = fillSpoke(d, im, sp)
-            d.spokes(sp,:) = improfile(im, d.center, d.points(sp, :), length(d.spokes(sp,:)));
+            d.spokes(sp,:) = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:)));
         end
         
         function d = setSliceShad(d, i, slice)
@@ -68,8 +68,8 @@ classdef PenumbraDescriptor
             if ~exist('plot_color', 'var')
                 plot_color = [1, 1, 1];
             end
-            for s = 1:size(d.slices_shad,1)
-                plot(d.points(s, :, 1), d.points(s, :, 2), 'color', plot_color);
+            for s = 1:size(d.spokes,1)
+                plot([d.center(1) d.points(s, 1)], [d.center(2) d.points(s, 2)], 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');
         end
