@@ -3,8 +3,8 @@ function [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, su
     shad = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\', img_date, '\', img_date, '_', suffix, '_shad.tif']);
     noshad = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' img_date '\' img_date, '_', suffix, '_noshad.tif']);
 
-    shad = shad(150:199, 370:459);
-    noshad = noshad(150:199, 370:459);
+    shad = shad(150:299, 370:559);
+    noshad = noshad(150:299, 370:559);
     
     matte = shad ./ noshad;
     

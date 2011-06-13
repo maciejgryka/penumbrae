@@ -1,7 +1,7 @@
 function saveDescriptors(shad, noshad)
     [shad noshad matte penumbra_mask n_angles scales] = prepareEnv('2011-05-16', 'plain');
     rough = readSCDIm('C:\Work\research\shadow_removal\penumbrae\images\2011-05-16\2011-05-16_rough4_shad.tif');
-    rough = rough(150:199, 370:459);
+    rough = rough(150:299, 370:559);
     
     n_ims = 2;
     
