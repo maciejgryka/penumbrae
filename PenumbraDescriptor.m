@@ -2,6 +2,8 @@ classdef PenumbraDescriptor
     properties
         center
         center_pixel
+        center_pixel_dx
+        center_pixel_dy
         spokes
         points
     end
@@ -20,6 +22,9 @@ classdef PenumbraDescriptor
             d.center = pixel;
             if exist('matte', 'var') && ~isempty(matte)
                 d.center_pixel = matte(pixel(2), pixel(1));
+                [dx dy] = gradient(matte);
+                center_pixel_dx = dx(pixel(2), pixel(1));
+                center_pixel_dy = dy(pixel(2), pixel(1));
             else
                 d.center_pixel = NaN;
             end
