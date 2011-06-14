@@ -53,7 +53,7 @@ classdef PenumbraDescriptor
         end
         
         function d = fillSpoke(d, im, sp)
-            d.spokes(sp,:) = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:)));
+            d.spokes(sp,:) = gradient(improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:))));
         end
         
         function d = setSliceShad(d, i, slice)
