@@ -5,7 +5,7 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    k = 5;
+    k = 10;
     
     mattes = cell(length(scales));
 
@@ -70,6 +70,21 @@ function tryToMatch()
         
         % turn descriptor indices into matte values
         best_mattes = center_pixels(best_descrs);
+        close all;
+        for r = 1:size(best_mattes,1)
+            subplot(1,2,1);
+            imshow(shad_s);
+            hold on;
+            c_descrs(r).draw();
+            hold off;
+            subplot(1,2,2);
+            hist(best_mattes(r,:), 0:0.1:1)
+            axis([0 1 0 20]);
+            hold on;
+            m = matte(c_descrs(r).center(2), c_descrs(r).center(1));
+            plot([m m], [0 100], '-r', 'LineWidth', 3);
+            hold off;
+        end
         
         % distance-based weights
         wg = 1-dists;
@@ -89,12 +104,12 @@ function tryToMatch()
         
         err = mean(abs(matte_s(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
-        errim = zeros([size(shad_s) 3]);
-        errim(:,:,1) = abs(matte_s - mattes{sc});
-        [rx ry] = gradient(mattes{sc});
-        [mx my] = gradient(matte_s);
-        errim(:,:,2) = abs(rx-mx);
-        errim(:,:,3) = abs(ry-my);
+%         errim = zeros([size(shad_s) 3]);
+%         errim(:,:,1) = abs(matte_s - mattes{sc});
+%         [rx ry] = gradient(mattes{sc});
+%         [mx my] = gradient(matte_s);
+%         errim(:,:,2) = abs(rx-mx);
+%         errim(:,:,3) = abs(ry-my);
         
         subplot(2,2,1);
         imshow(shad_s);
