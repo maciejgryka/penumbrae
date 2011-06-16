@@ -26,8 +26,8 @@ function tryToMatch()
         penumbra_mask_s = addBorders(penumbra_mask, 1);
         recovered_matte = addBorders(ones(h, w), 1);
         recovered_matte = ones(size(recovered_matte));
-        recovered_mx = zeros(size(recovered_matte));
-        recovered_my = zeros(size(recovered_matte));
+%         recovered_mx = zeros(size(recovered_matte));
+%         recovered_my = zeros(size(recovered_matte));
         
         % get pixels where descriptors at given sale can be calculated
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, scales(sc));
@@ -38,9 +38,9 @@ function tryToMatch()
         end
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
-                
-        c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
-
+        
+        fprintf('\tloading/calculating descriptors...\n');
+%         c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
 %         for n = 1:length(p_pix)
 %             c_descrs(n) = PenumbraDescriptor(shad_s, pixel(n,:), n_angles, len);
 %         end
@@ -50,13 +50,16 @@ function tryToMatch()
 
         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
+%         % matte values for descriptors in training set
+%         cp_mdx = cat(1,descrs(:).center_pixel_dx);
+%         cp_mdy = cat(1,descrs(:).center_pixel_dy);
+        
         fprintf('\tnormalizing...\n');
         n_spokes = size(c_spokes,1);
         c_spokes = (c_spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
-%         drawDescr(shad_s, c_descrs);
         fprintf('\tfinding nearest neighbors...\n');
-        [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k);
+        [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
         
         fprintf('\tweighting suggestions...\n');
         % turn spoke indices into descriptor indices
@@ -66,7 +69,7 @@ function tryToMatch()
         dists = reshape(dists', n_angles*2*k, size(dists,1)/(n_angles*2))';
         
         % turn descriptor indices into matte values
-        best_mattes = cat(1,center_pixels(best_descrs));
+        best_mattes = center_pixels(best_descrs);
         
         % distance-based weights
         wg = 1-dists;
@@ -81,6 +84,8 @@ function tryToMatch()
 %         best_mattes = mean(best_mattes)';
         recovered_matte(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes;
         mattes{sc} = recovered_matte;
+        
+%         recovered_mx((sub2ind(size(matte_s), pixel(:,2), pixel(:,1)))) = cp_mdx(best
         
         err = mean(abs(matte_s(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
