@@ -23,8 +23,8 @@ classdef PenumbraDescriptor
             if exist('matte', 'var') && ~isempty(matte)
                 d.center_pixel = matte(pixel(2), pixel(1));
                 [dx dy] = gradient(matte);
-                center_pixel_dx = dx(pixel(2), pixel(1));
-                center_pixel_dy = dy(pixel(2), pixel(1));
+                d.center_pixel_dx = dx(pixel(2), pixel(1));
+                d.center_pixel_dy = dy(pixel(2), pixel(1));
             else
                 d.center_pixel = NaN;
             end
@@ -34,7 +34,8 @@ classdef PenumbraDescriptor
             % each spoke has two endpoints: d.center and one of d.points
             % there are two spokes at each angle
             d.points = zeros(2*n_angles, 2);
-            d.spokes = zeros(n_angles*2, hl+1);
+            d.spokes = zeros(n_angles*2, 2*(hl+1));
+%             d.spokes = zeros(n_angles*2, hl+1);
             
 
             ang_step = pi/n_angles;
@@ -53,7 +54,10 @@ classdef PenumbraDescriptor
         end
         
         function d = fillSpoke(d, im, sp)
-            d.spokes(sp,:) = gradient(improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:))));
+            sl = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:))/2);
+            d.spokes(sp,:) = [gradient(sl)' sl'];
+%             sl = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:)));
+%             d.spokes(sp,:) = gradient(sl)';
         end
         
         function d = setSliceShad(d, i, slice)

@@ -56,25 +56,35 @@ function tryToMatch()
         % turn spoke indices into descriptor indices
         best_descrs = ceil(best_descrs./(n_angles*2));
         
+        best_descrs = reshape(best_descrs', size(best_descrs,1)/(n_angles*2), n_angles*2*k);
+        dists = reshape(dists', size(dists,1)/(n_angles*2), n_angles*2*k);
+        
         % turn descriptor indices into matte values
         best_mattes = cat(1,center_pixels(best_descrs));
         
         % distance-based weights
         wg = 1-dists;
-        wg =  wg ./ repmat(sum(wg, 2), 1, k);
+        wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
         best_mattes = sum(best_mattes .* wg, 2);
 
-        % each column of the below matrix contains votes for a training-set
-        % descriptor matching a given testset descriptor
-        best_mattes = reshape(best_mattes, n_angles*2, length(best_mattes)/(n_angles*2));
-        % now average over spokes to arrive at a proposed matte value for
-        % this descriptor (might want to weight-average later)
-        best_mattes = mean(best_mattes)';
+%         % each column of the below matrix contains votes for a training-set
+%         % descriptor matching a given testset descriptor
+%         best_mattes = reshape(best_mattes, n_angles*2, length(best_mattes)/(n_angles*2));
+%         % now average over spokes to arrive at a proposed matte value for
+%         % this descriptor (might want to weight-average later)
+%         best_mattes = mean(best_mattes)';
         recovered_matte(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes;
         mattes{sc} = recovered_matte;
         
         err = mean(abs(matte_s(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
-
+        
+        errim = zeros([size(shad_s) 3]);
+        errim(:,:,1) = abs(matte_s - mattes{sc});
+        [rx ry] = gradient(mattes{sc});
+        [mx my] = gradient(matte_s);
+        errim(:,:,2) = abs(rx-mx);
+        errim(:,:,3) = abs(ry-my);
+        
         subplot(2,2,1);
         imshow(shad_s);
         subplot(2,2,2);
@@ -85,5 +95,13 @@ function tryToMatch()
         ms = matte_s .* (mattes{sc} < 1);
         ms(ms == 0) = 1;
         imshow(ms);
+        
+        figure;
+        subplot(1,3,1);
+        imshow(errim(:,:,1));
+        subplot(1,3,2);
+        imshow(errim(:,:,2));
+        subplot(1,3,3);
+        imshow(errim(:,:,3));
     end
 end

@@ -56,9 +56,16 @@ function saveDescriptors(shad, noshad)
         % big matrix
         spokes = (cat(1,descrs(:).spokes));
         center_pixels = cat(1,descrs(:).center_pixel);
+        
+        fprintf('\tnormalizing...\n');
+        n_spokes = size(spokes,1);
+        spokes_mu = mean(spokes);
+        spokes_std = std(spokes);
+        
+        spokes = (spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
 
 %         drawDescr(shad, descrs);
         fprintf('\tsaving results...\n');
-        save(['descrs_small_' int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'center_pixels');
+        save(['descrs_small_' int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'spokes_mu', 'spokes_std', 'center_pixels');
     end
 end
