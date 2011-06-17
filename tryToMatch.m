@@ -26,8 +26,8 @@ function tryToMatch()
         penumbra_mask_s = addBorders(penumbra_mask, 1);
         recovered_matte = addBorders(ones(h, w), 1);
         recovered_matte = ones(size(recovered_matte));
-%         recovered_mx = zeros(size(recovered_matte));
-%         recovered_my = zeros(size(recovered_matte));
+        recovered_mx = zeros(size(recovered_matte));
+        recovered_my = zeros(size(recovered_matte));
         
         % get pixels where descriptors at given sale can be calculated
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, scales(sc));
@@ -50,9 +50,9 @@ function tryToMatch()
 
         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
-%         % matte values for descriptors in training set
-%         cp_mdx = cat(1,descrs(:).center_pixel_dx);
-%         cp_mdy = cat(1,descrs(:).center_pixel_dy);
+        % matte values for descriptors in training set
+        cp_mdx = cat(1,descrs(:).center_pixel_dx);
+        cp_mdy = cat(1,descrs(:).center_pixel_dy);
         
         fprintf('\tnormalizing...\n');
         n_spokes = size(c_spokes,1);
@@ -70,81 +70,52 @@ function tryToMatch()
         
         % turn descriptor indices into matte values
         best_mattes = center_pixels(best_descrs);
+        best_mattes_dx = cp_mdx(best_descrs);
+        best_mattes_dy = cp_mdy(best_descrs);
         
+%         % for each descriptor bin the proposed values into 10 bins and
+%         % extract histogram peak
+%         [matte_hists xout] = hist(best_mattes, 100);
+%         [c i] = max(matte_hists, [], 1);
+%         best_mattes = xout(i);
+
         % distance-based weights
         wg = (1-dists);
-%         wg = (1-dists).^3;
         wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
-
-        m_range = 0:0.1:1;
-        close all;
-        for r = 1:size(best_mattes,1)
-            r = uint32(rand()*size(best_mattes,1));
-            subplot(1,2,1);
-            imshow(shad_s);
-            hold on;
-            c_descrs(r).draw();
-            hold off;
-            subplot(1,2,2);
-            n = hist(best_mattes(r,:), m_range);
-            hist(best_mattes(r,:), 0:0.1:1);
-            axis([0 1 0 max(n)]);
-            hold on;
-            % ground truth matte
-            gtm = matte(c_descrs(r).center(2), c_descrs(r).center(1));
-            plot([gtm gtm], [0 100], '-r', 'LineWidth', 3);
-            % histogram peak
-            hp = m_range(n == max(n));
-            hp = hp(1);
-            plot([hp hp], [0 100], '-b', 'LineWidth', 3);
-            % median
-            md = median(best_mattes(r,:));
-            plot([md md], [0 100], '-c', 'LineWidth', 3);
-%             %weighted average matte
-%             wam = sum(best_mattes(r,:) .* wg(r,:));
-%             plot([wam wam], [0 100], '-g', 'LineWidth', 3);
-            hold off;
-        end
-        
         best_mattes = sum(best_mattes .* wg, 2);
+        best_mattes_dx = sum(best_mattes_dx .* wg, 2);
+        best_mattes_dy = sum(best_mattes_dy .* wg, 2);
 
-%         % each column of the below matrix contains votes for a training-set
-%         % descriptor matching a given testset descriptor
-%         best_mattes = reshape(best_mattes, n_angles*2, length(best_mattes)/(n_angles*2));
-%         % now average over spokes to arrive at a proposed matte value for
-%         % this descriptor (might want to weight-average later)
-%         best_mattes = mean(best_mattes)';
         recovered_matte(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes;
         mattes{sc} = recovered_matte;
         
-%         recovered_mx((sub2ind(size(matte_s), pixel(:,2), pixel(:,1)))) = cp_mdx(best
+        recovered_mx(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes_dx;
+        recovered_my(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes_dy;
         
         err = mean(abs(matte_s(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
-%         errim = zeros([size(shad_s) 3]);
-%         errim(:,:,1) = abs(matte_s - mattes{sc});
-%         [rx ry] = gradient(mattes{sc});
-%         [mx my] = gradient(matte_s);
-%         errim(:,:,2) = abs(rx-mx);
-%         errim(:,:,3) = abs(ry-my);
+%         subplot(2,2,1);
+%         imshow(shad_s);
+%         subplot(2,2,2);
+%         imshow(mattes{sc});
+%         subplot(2,2,3);
+%         imshow(shad_s ./ mattes{sc});
+%         subplot(2,2,4);
+%         ms = matte_s .* (penumbra_mask_s == 1);
+%         ms(ms == 0) = 1;
+%         imshow(ms);
         
-        subplot(2,2,1);
-        imshow(shad_s);
-        subplot(2,2,2);
-        imshow(mattes{sc});
-        subplot(2,2,3);
-        imshow(shad_s ./ mattes{sc});
-        subplot(2,2,4);
-        ms = matte_s .* (penumbra_mask_s == 1);
-        ms(ms == 0) = 1;
-        imshow(ms);
+        [mdx mdy] = gradient(matte_s);
+        errim_int = abs(matte_s - mattes{sc});
+        errim_dx = abs(mdx-recovered_mx);
+        errim_dy = abs(mdy-recovered_my);
         
 %         figure;
-%         subplot(1,3,1);
-%         imagesc(errim(:,:,1));
-%         subplot(1,3,2);
-%         imagesc(errim(:,:,2));
-%         subplot(1,3,3);
-%         imagesc(errim(:,:,3));
+        subplot(1,3,1);
+        imshow(errim_int .* penumbra_mask_s);
+        subplot(1,3,2);
+        imshow(errim_dx .* penumbra_mask_s);
+        subplot(1,3,3);
+        imshow(errim_dy .* penumbra_mask_s);
     end
 end
