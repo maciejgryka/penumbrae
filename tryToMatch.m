@@ -5,7 +5,7 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    k = 10;
+    k = 5;
     
     mattes = cell(length(scales));
 
@@ -13,8 +13,8 @@ function tryToMatch()
         fprintf('Computing matte at scale %i...\n', scales(sc));
         len = scales(sc);
         
-        if exist(['descrs_small_', int2str(scales(sc)), '.mat'], 'file')
-            load(['descrs_small_', int2str(scales(sc)), '.mat']);
+        if exist(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat'], 'file')
+            load(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat']);
         else
             fprintf('\tno data at this scale\n');
             continue;
@@ -39,7 +39,7 @@ function tryToMatch()
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
         
-        fprintf('\tloading/calculating descriptors...\n');
+%         fprintf('\tloading/calculating descriptors...\n');
 %         c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
 %         for n = 1:length(p_pix)
 %             c_descrs(n) = PenumbraDescriptor(shad_s, pixel(n,:), n_angles, len);
@@ -70,25 +70,42 @@ function tryToMatch()
         
         % turn descriptor indices into matte values
         best_mattes = center_pixels(best_descrs);
+        
+        % distance-based weights
+        wg = (1-dists);
+%         wg = (1-dists).^3;
+        wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
+
+        m_range = 0:0.1:1;
         close all;
         for r = 1:size(best_mattes,1)
+            r = uint32(rand()*size(best_mattes,1));
             subplot(1,2,1);
             imshow(shad_s);
             hold on;
             c_descrs(r).draw();
             hold off;
             subplot(1,2,2);
-            hist(best_mattes(r,:), 0:0.1:1)
-            axis([0 1 0 20]);
+            n = hist(best_mattes(r,:), m_range);
+            hist(best_mattes(r,:), 0:0.1:1);
+            axis([0 1 0 max(n)]);
             hold on;
-            m = matte(c_descrs(r).center(2), c_descrs(r).center(1));
-            plot([m m], [0 100], '-r', 'LineWidth', 3);
+            % ground truth matte
+            gtm = matte(c_descrs(r).center(2), c_descrs(r).center(1));
+            plot([gtm gtm], [0 100], '-r', 'LineWidth', 3);
+            % histogram peak
+            hp = m_range(n == max(n));
+            hp = hp(1);
+            plot([hp hp], [0 100], '-b', 'LineWidth', 3);
+            % median
+            md = median(best_mattes(r,:));
+            plot([md md], [0 100], '-c', 'LineWidth', 3);
+%             %weighted average matte
+%             wam = sum(best_mattes(r,:) .* wg(r,:));
+%             plot([wam wam], [0 100], '-g', 'LineWidth', 3);
             hold off;
         end
         
-        % distance-based weights
-        wg = 1-dists;
-        wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
         best_mattes = sum(best_mattes .* wg, 2);
 
 %         % each column of the below matrix contains votes for a training-set

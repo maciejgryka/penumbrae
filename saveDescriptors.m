@@ -66,6 +66,6 @@ function saveDescriptors(shad, noshad)
 
 %         drawDescr(shad, descrs);
         fprintf('\tsaving results...\n');
-        save(['descrs_small_' int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'spokes_mu', 'spokes_std', 'center_pixels');
+        save(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'spokes_mu', 'spokes_std', 'center_pixels');
     end
 end
