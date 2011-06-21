@@ -25,14 +25,14 @@ function tryToMatch()
 %         noshad_s = addBorders(noshad, 1);
 %         matte_s = addBorders(matte, 1);
 %         penumbra_mask_s = addBorders(penumbra_mask, 1);
-        [shad_s noshad_s matte_s penumbra_mask_s] = ...
-            padImagesWithBorders(shad, noshad, matte, penumbra_mask);
-        recovered_matte = ones(size(shad_s));
+%         [shad_s noshad_s matte_s penumbra_mask_s] = ...
+%             padImagesWithBorders(shad, noshad, matte, penumbra_mask);
+        recovered_matte = ones(size(shad));
         recovered_mx = zeros(size(recovered_matte));
         recovered_my = zeros(size(recovered_matte));
         
         % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, scales(sc));
+        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, scales(sc));
         p_pix = find(penumbra_mask_s' == 1);
         if (isempty(p_pix))
             fprintf('\tno descriptors and this scale\n');
@@ -43,15 +43,16 @@ function tryToMatch()
         
         fprintf('\tloading/calculating descriptors...\n');
 
-%         c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
-%         for n = 1:length(p_pix)
-%             c_descrs(n) = PenumbraDescriptor(shad_s, pixel(n,:), n_angles, len);
-%         end
-%         % current (test) spokes
-%         c_spokes = cat(1,c_descrs(:).spokes);
-%         save(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
+        % current (test) descriptors
+        c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
+        for n = 1:length(p_pix)
+            c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
+        end
+        % current (test) spokes
+        c_spokes = cat(1,c_descrs(:).spokes);
+        save(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
 
-        load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
+%         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
         % matte gradient values for descriptors in training set
         cp_mdx = cat(1,descrs(:).center_pixel_dx);
@@ -98,13 +99,13 @@ function tryToMatch()
         best_mattes_dx = sum(best_mattes_dx .* wg, 2);
         best_mattes_dy = sum(best_mattes_dy .* wg, 2);
 
-        recovered_matte(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes;
+        recovered_matte(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes;
         mattes{sc} = recovered_matte;
         
-        recovered_mx(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes_dx;
-        recovered_my(sub2ind(size(matte_s), pixel(:,2), pixel(:,1))) = best_mattes_dy;
+        recovered_mx(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes_dx;
+        recovered_my(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes_dy;
         
-        err = mean(abs(matte_s(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
+        err = mean(abs(matte(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
 %         subplot(2,2,1);
 %         imshow(shad_s);
@@ -117,8 +118,8 @@ function tryToMatch()
 %         ms(ms == 0) = 1;
 %         imshow(ms);
         
-        [mdx mdy] = gradient(matte_s);
-        errim_int = abs(matte_s - mattes{sc});
+        [mdx mdy] = gradient(matte);
+        errim_int = abs(matte - mattes{sc});
         errim_dx = abs(mdx-recovered_mx);
         errim_dy = abs(mdy-recovered_my);
         

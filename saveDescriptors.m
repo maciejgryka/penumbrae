@@ -47,7 +47,7 @@ function saveDescriptors(shad, noshad)
         for i = 1:n_ims
             fprintf('\timage %i...\n', i);
             for p = 1:length(p_pix)
-                descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte_s);
+                descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte);
 
                 curr_descr = curr_descr+1;
             end
