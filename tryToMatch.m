@@ -1,9 +1,6 @@
 function tryToMatch()
     suffix = 'wood1';
     [shad noshad matte penumbra_mask n_angles scales] = prepareEnv('2011-06-13', suffix);
-
-    w = size(matte, 2);
-    h = size(matte, 1);
     
     k = 1;
     
@@ -19,33 +16,24 @@ function tryToMatch()
             fprintf('\tno data at this scale\n');
             continue;
         end
-        
-        % pad the images with zero-borders
-%         shad_s = addBorders(shad, 1);
-%         noshad_s = addBorders(noshad, 1);
-%         matte_s = addBorders(matte, 1);
-%         penumbra_mask_s = addBorders(penumbra_mask, 1);
-%         [shad_s noshad_s matte_s penumbra_mask_s] = ...
-%             padImagesWithBorders(shad, noshad, matte, penumbra_mask);
+
         recovered_matte = ones(size(shad));
         recovered_mx = zeros(size(recovered_matte));
         recovered_my = zeros(size(recovered_matte));
         
         % get pixels where descriptors at given sale can be calculated
         penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, scales(sc));
-        p_pix = find(penumbra_mask_s' == 1);
-        if (isempty(p_pix))
+        pixel = getPenumbraPixels(penumbra_mask_s);
+        if isnan(pixel)
             fprintf('\tno descriptors and this scale\n');
             continue;
         end
-        pixel = zeros(length(p_pix), 2);
-        [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
         
         fprintf('\tloading/calculating descriptors...\n');
 
         % current (test) descriptors
-        c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
-        for n = 1:length(p_pix)
+        c_descrs = repmat(PenumbraDescriptor, size(pixel,1), 1);
+        for n = 1:size(pixel,1)
             c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
         end
         % current (test) spokes
