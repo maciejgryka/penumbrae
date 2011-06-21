@@ -5,7 +5,7 @@ function tryToMatch()
     w = size(matte, 2);
     h = size(matte, 1);
     
-    k = 5;
+    k = 1;
     
     mattes = cell(length(scales));
 
@@ -21,11 +21,13 @@ function tryToMatch()
         end
         
         % pad the images with zero-borders
-        shad_s = addBorders(shad, 1);
-        matte_s = addBorders(matte, 1);
-        penumbra_mask_s = addBorders(penumbra_mask, 1);
-        recovered_matte = addBorders(ones(h, w), 1);
-        recovered_matte = ones(size(recovered_matte));
+%         shad_s = addBorders(shad, 1);
+%         noshad_s = addBorders(noshad, 1);
+%         matte_s = addBorders(matte, 1);
+%         penumbra_mask_s = addBorders(penumbra_mask, 1);
+        [shad_s noshad_s matte_s penumbra_mask_s] = ...
+            padImagesWithBorders(shad, noshad, matte, penumbra_mask);
+        recovered_matte = ones(size(shad_s));
         recovered_mx = zeros(size(recovered_matte));
         recovered_my = zeros(size(recovered_matte));
         
@@ -39,7 +41,8 @@ function tryToMatch()
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
         
-%         fprintf('\tloading/calculating descriptors...\n');
+        fprintf('\tloading/calculating descriptors...\n');
+
 %         c_descrs = repmat(PenumbraDescriptor, length(p_pix), 1);
 %         for n = 1:length(p_pix)
 %             c_descrs(n) = PenumbraDescriptor(shad_s, pixel(n,:), n_angles, len);
@@ -50,13 +53,22 @@ function tryToMatch()
 
         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
-        % matte values for descriptors in training set
+        % matte gradient values for descriptors in training set
         cp_mdx = cat(1,descrs(:).center_pixel_dx);
         cp_mdy = cat(1,descrs(:).center_pixel_dy);
         
         fprintf('\tnormalizing...\n');
         n_spokes = size(c_spokes,1);
         c_spokes = (c_spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
+        
+%         % cull the spokes and c_spokes matrices to include only gradient or
+%         % only intensity
+% %             % only gradient
+% %             spokes = spokes(:,1:size(spokes,2)/2);
+% %             c_spokes = c_spokes(:,1:size(c_spokes,2)/2);
+% %             % only intensity
+% %             spokes = spokes(:,size(spokes,2)/2:size(spokes,2));
+% %             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
         
         fprintf('\tfinding nearest neighbors...\n');
         [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
@@ -68,7 +80,7 @@ function tryToMatch()
         best_descrs = reshape(best_descrs', n_angles*2*k, size(best_descrs,1)/(n_angles*2))';
         dists = reshape(dists', n_angles*2*k, size(dists,1)/(n_angles*2))';
         
-        % turn descriptor indices into matte values
+        % turn descriptor indices into matte values (and gradient values)
         best_mattes = center_pixels(best_descrs);
         best_mattes_dx = cp_mdx(best_descrs);
         best_mattes_dy = cp_mdy(best_descrs);
@@ -110,12 +122,10 @@ function tryToMatch()
         errim_dx = abs(mdx-recovered_mx);
         errim_dy = abs(mdy-recovered_my);
         
-%         figure;
-        subplot(1,3,1);
+        figure;
+        subplot(1,2,1);
         imshow(errim_int .* penumbra_mask_s);
-        subplot(1,3,2);
-        imshow(errim_dx .* penumbra_mask_s);
-        subplot(1,3,3);
-        imshow(errim_dy .* penumbra_mask_s);
+        subplot(1,2,2);
+        imshow(sqrt(errim_dx.^2 + errim_dy.^2) .* penumbra_mask_s);
     end
 end

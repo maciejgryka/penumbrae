@@ -3,7 +3,7 @@ function saveDescriptors(shad, noshad)
     suffix = 'plain';
     [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
     rough = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' date '\' date '_rough4_shad.tif']);
-    rough = rough(150:299, 370:559);
+    rough = rough(150:249, 370:469);
     
     n_ims = 2;
     
@@ -17,14 +17,16 @@ function saveDescriptors(shad, noshad)
         len = scales(sc);
         
         % pad the images with zero-borders of width len
-        shad_s = addBorders(shad, len);
-        rough_s = addBorders(rough, len);
+%         shad_s = addBorders(shad, len);
+%         rough_s = addBorders(rough, len);
 %         noshad_s = addBorders(noshad, len);
-        matte_s = addBorders(matte, len);
-        penumbra_mask_s = addBorders(penumbra_mask, len);
+%         matte_s = addBorders(matte, len);
+%         penumbra_mask_s = addBorders(penumbra_mask, len);
+%         [shad_s rough_s noshad_s matte_s penumbra_mask_s] = ...
+%             padImagesWithBorders(shad, rough, noshad, matte, penumbra_mask);
                 
         % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask_s, scales(sc));
+        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, scales(sc));
         p_pix = find(penumbra_mask_s' == 1);
         if (isempty(p_pix))
             fprintf('\tno descriptors and this scale\n');
@@ -33,8 +35,8 @@ function saveDescriptors(shad, noshad)
         pixel = zeros(length(p_pix), 2);
         [pixel(:,1) pixel(:,2)] = ind2sub(size(penumbra_mask_s'), p_pix);
             
-        shadmatte{1,1} = shad_s;
-        shadmatte{2,1} = rough_s;
+        shadmatte{1,1} = shad;
+        shadmatte{2,1} = rough;
         shadmatte{1,2} = pixel;
         shadmatte{2,2} = pixel;
         
