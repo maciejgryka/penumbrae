@@ -1,6 +1,7 @@
 function tryToMatch()
-    suffix = 'wood1';
-    [shad noshad matte penumbra_mask n_angles scales] = prepareEnv('2011-06-13', suffix);
+    date = '2011-06-13';
+    suffix = 'rough1';
+    [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
     
     k = 1;
     
@@ -10,8 +11,8 @@ function tryToMatch()
         fprintf('Computing matte at scale %i...\n', scales(sc));
         len = scales(sc);
         
-        if exist(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat'], 'file')
-            load(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat']);
+        if exist(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], 'file')
+            load(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat']);
         else
             fprintf('\tno data at this scale\n');
             continue;

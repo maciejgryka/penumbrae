@@ -55,8 +55,8 @@ function saveDescriptors(shad, noshad)
         
         spokes = (spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
 
-        drawDescr(shad, descrs);
+%         drawDescr(shad, descrs);
         fprintf('\tsaving results...\n');
-        save(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), '.mat'], 'descrs', 'spokes', 'spokes_mu', 'spokes_std', 'center_pixels');
+        save(['descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], 'descrs', 'spokes', 'spokes_mu', 'spokes_std', 'center_pixels');
     end
 end
