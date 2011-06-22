@@ -3,7 +3,7 @@ function tryToMatch()
     suffix = 'wood1';
     [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
     
-    k = 1;
+    k = 10;
     
     mattes = cell(length(scales));
 
@@ -51,14 +51,14 @@ function tryToMatch()
         n_spokes = size(c_spokes,1);
         c_spokes = (c_spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
-%         % cull the spokes and c_spokes matrices to include only gradient or
-%         % only intensity
-% %             % only gradient
-% %             spokes = spokes(:,1:size(spokes,2)/2);
-% %             c_spokes = c_spokes(:,1:size(c_spokes,2)/2);
-% %             % only intensity
-% %             spokes = spokes(:,size(spokes,2)/2:size(spokes,2));
-% %             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
+        % cull the spokes and c_spokes matrices to include only gradient or
+        % only intensity
+%             % only gradient
+%             spokes = spokes(:,1:size(spokes,2)/2);
+%             c_spokes = c_spokes(:,1:size(c_spokes,2)/2);
+%             % only intensity
+%             spokes = spokes(:,size(spokes,2)/2:size(spokes,2));
+%             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
         
         fprintf('\tfinding nearest neighbors...\n');
         [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
@@ -120,9 +120,9 @@ function tryToMatch()
         errim_dx = abs(mdx-recovered_mx);
         errim_dy = abs(mdy-recovered_my);
         
-        figure;
+%         figure;
         subplot(1,2,1);
-        imshow(errim_int .* penumbra_mask_s);
+        imshow(errim_int .* penumbra_mask_s);   
         subplot(1,2,2);
         imshow(sqrt(errim_dx.^2 + errim_dy.^2) .* penumbra_mask_s);
     end
