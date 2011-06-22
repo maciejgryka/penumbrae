@@ -1,6 +1,6 @@
 function tryToMatch()
     date = '2011-06-13';
-    suffix = 'rough1';
+    suffix = 'wood1';
     [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
     
     k = 1;
@@ -32,16 +32,16 @@ function tryToMatch()
         
         fprintf('\tloading/calculating descriptors...\n');
 
-        % current (test) descriptors
-        c_descrs = repmat(PenumbraDescriptor, size(pixel,1), 1);
-        for n = 1:size(pixel,1)
-            c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
-        end
-        % current (test) spokes
-        c_spokes = cat(1,c_descrs(:).spokes);
-        save(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
+%         % current (test) descriptors
+%         c_descrs = repmat(PenumbraDescriptor, size(pixel,1), 1);
+%         for n = 1:size(pixel,1)
+%             c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
+%         end
+%         % current (test) spokes
+%         c_spokes = cat(1,c_descrs(:).spokes);
+%         save(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
 
-%         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
+        load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
         % matte gradient values for descriptors in training set
         cp_mdx = cat(1,descrs(:).center_pixel_dx);
@@ -80,13 +80,21 @@ function tryToMatch()
 %         [matte_hists xout] = hist(best_mattes, 100);
 %         [c i] = max(matte_hists, [], 1);
 %         best_mattes = xout(i);
-
+        
         % distance-based weights
-        wg = (1-dists);
+        wg = (max(max(dists))-dists);
         wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
         best_mattes = sum(best_mattes .* wg, 2);
         best_mattes_dx = sum(best_mattes_dx .* wg, 2);
         best_mattes_dy = sum(best_mattes_dy .* wg, 2);
+        
+        grad_mags_gt = sqrt(cp_mdx.^2 + cp_mdy.^2);
+        grad_angs_gt = atan(cp_mdy ./ cp_mdx);
+        show4plots(center_pixels, grad_mags_gt, grad_angs_gt);
+        
+        grad_mags = sqrt(best_mattes_dx.^2 + best_mattes_dy.^2);
+        grad_angs = atan(best_mattes_dy ./ best_mattes_dx);
+        show4plots(best_mattes, grad_mags, grad_angs);
 
         recovered_matte(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes;
         mattes{sc} = recovered_matte;
@@ -101,7 +109,7 @@ function tryToMatch()
 %         subplot(2,2,2);
 %         imshow(mattes{sc});
 %         subplot(2,2,3);
-%         imshow(shad_s ./ mattes{sc});
+%         imshow(shad ./ mattes{sc});
 %         subplot(2,2,4);
 %         ms = matte_s .* (penumbra_mask_s == 1);
 %         ms(ms == 0) = 1;
