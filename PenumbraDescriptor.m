@@ -2,6 +2,7 @@ classdef PenumbraDescriptor
     properties
         center
         center_pixel
+        center_pixel_int
         center_pixel_dx
         center_pixel_dy
         spokes
@@ -28,6 +29,7 @@ classdef PenumbraDescriptor
             else
                 d.center_pixel = NaN;
             end
+            d.center_pixel_int = shad(pixel(2), pixel(1));
             
             hl = floor(len/2); % half length
             

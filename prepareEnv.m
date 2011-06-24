@@ -10,7 +10,7 @@ function [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, su
     
     n_angles = 4;
 %     scales = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100];
-    scales = [10];
+    scales = [5];
     
 %     [dx dy] = gradient(matte);
 %     matte_abs_grad = abs(dx) + abs(dy);
