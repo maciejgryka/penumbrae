@@ -31,7 +31,7 @@ for tex in zip(tex_names, tex_files):
     shaders_groups[tex[0] + 'SG'] = shading_group
     shaders_groups[tex[0] + 'SN'] = shadingNode('file', at=True, name=tex[0]+'_file')
     shaders_groups[tex[0] + 'SN'].setAttr('fileTextureName', tex[1])
-#    debug_here()
+
     connectAttr(shaders_groups[tex[0] + 'SN'].outColor, shader.color)
 
 # setup scene geometry
@@ -67,13 +67,11 @@ light1.setAttr('areaHiSamples', 100)
 connectAttr(light1.instObjGroups[0], SCENE.defaultLightSet.dagSetMembers[0])
 
 disconnectAttr(groundPlane[0].getShape().instObjGroups[0], PyNode('initialShadingGroup').dagSetMembers[0])
-connectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups['wood1_jpgSG'].dagSetMembers[1], f=1)
 
-saveAs(scene_path, f=1)
-
-# for tex_name in tex_names:
-#     sets(shaders_groups[tex_name+'SG'], forceElement=shaders_groups[tex_name+'Sh'])
-#     out_im = os.path.join('/', current_folder, tex_name)
-#     connectAttr(groundPlane[0].instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[0])
-#     call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
-#     disconnectAttr(groundPlane[0].instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[0])
+for tex_name in tex_names:
+    #  sets(shaders_groups[tex_name+'SG'], forceElement=groundPlane[0])
+    out_im = os.path.join('/', current_folder, tex_name)
+    connectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[1], f=1)
+    saveAs(scene_path, f=1)
+    call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
+    disconnectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[1])
