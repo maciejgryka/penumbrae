@@ -12,7 +12,7 @@ function saveDescriptors(shad, noshad)
     wood2 = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' date '\' date '_wood2_shad.tif']);
     wood2 = wood2(150:249, 370:469);
     
-    n_ims = 1;
+    n_ims = 2;
     
     % cell containing in each row an image from which to caluclate 
     % descriptors as well as list of pixel coords at which the descriptors
@@ -32,11 +32,11 @@ function saveDescriptors(shad, noshad)
         end
             
         shadmatte{1,1} = shad;
-%         shadmatte{2,1} = rough;
+        shadmatte{2,1} = rough;
 %         shadmatte{3,1} = rough1;
 %         shadmatte{4,1} = wood2;
         shadmatte{1,2} = pixel;
-%         shadmatte{2,2} = pixel;
+        shadmatte{2,2} = pixel;
 %         shadmatte{3,2} = pixel;
 %         shadmatte{4,2} = pixel;
         

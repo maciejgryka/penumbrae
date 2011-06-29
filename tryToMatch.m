@@ -52,7 +52,7 @@ function tryToMatch()
         c_spokes = (c_spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
         fprintf('\tapplying transformation...\n');
-%         c_spokes = (L*c_spokes')';
+        c_spokes = (L*c_spokes')';
         % cull the spokes and c_spokes matrices to include only gradient or
         % only intensity
 %             % only gradient
@@ -63,7 +63,7 @@ function tryToMatch()
 %             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
         
         fprintf('\tfinding nearest neighbors...\n');
-        [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
+        [best_descrs dists] = knnsearch(spokes_t,c_spokes,'K', k, 'NSMethod', 'kdtree');
         
         fprintf('\tweighting suggestions...\n');
         % turn spoke indices into descriptor indices

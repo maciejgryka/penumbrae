@@ -6,6 +6,15 @@
 *.tiff
 *.iff
 
+# Emacs files #
+\#*
+*~
+.#*
+\#*\#
+*.log
+*.desktop
+*.desktop.lock
+
 # Matlab #
 *.mat
 *.asv
