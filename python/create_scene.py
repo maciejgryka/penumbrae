@@ -66,9 +66,14 @@ light1.setAttr('areaHiSamples', 100)
 # make sure the light illuminates everything
 connectAttr(light1.instObjGroups[0], SCENE.defaultLightSet.dagSetMembers[0])
 
+disconnectAttr(groundPlane[0].getShape().instObjGroups[0], PyNode('initialShadingGroup').dagSetMembers[0])
+connectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups['wood1_jpgSG'].dagSetMembers[1], f=1)
+
 saveAs(scene_path, f=1)
 
-for tex_name in tex_names:
-    sets(shaders_groups[tex_name+'SG'], forceElement=shaders_groups[tex_name+'Sh'])
-    out_im = os.path.join('/', current_folder, tex_name)
-#    call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
+# for tex_name in tex_names:
+#     sets(shaders_groups[tex_name+'SG'], forceElement=shaders_groups[tex_name+'Sh'])
+#     out_im = os.path.join('/', current_folder, tex_name)
+#     connectAttr(groundPlane[0].instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[0])
+#     call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
+#     disconnectAttr(groundPlane[0].instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[0])
