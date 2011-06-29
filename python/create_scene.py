@@ -29,8 +29,10 @@ for tex in zip(tex_names, tex_files):
     shader, shading_group = createSurfaceShader('lambert', tex[0])
     shaders_groups[tex[0] + 'Sh'] = shader
     shaders_groups[tex[0] + 'SG'] = shading_group
-    shaders_groups[tex[0] + 'SN'] = shadingNode('file', at=True, name=tex[0])
+    shaders_groups[tex[0] + 'SN'] = shadingNode('file', at=True, name=tex[0]+'_file')
     shaders_groups[tex[0] + 'SN'].setAttr('fileTextureName', tex[1])
+#    debug_here()
+    connectAttr(shaders_groups[tex[0] + 'SN'].outColor, shader.color)
 
 # setup scene geometry
 renderCam = nt.Camera()
@@ -69,4 +71,4 @@ saveAs(scene_path, f=1)
 for tex_name in tex_names:
     sets(shaders_groups[tex_name+'SG'], forceElement=shaders_groups[tex_name+'Sh'])
     out_im = os.path.join('/', current_folder, tex_name)
-    call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
+#    call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
