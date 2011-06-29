@@ -18,12 +18,12 @@ else:
 shaders_groups = {}
 
 # get absolute paths to texture files
-tex_folder = os.path.join('/', current_folder, 'tex')
+tex_folder = os.path.join('/', current_folder, 'textures')
 tex_files = [os.path.join('/', tex_folder, tex_file) 
-             for tex_file in os.listdir(tex_folder)]
+             for tex_file in os.listdir(tex_folder) if os.path.isfile(os.path.join(tex_folder, tex_file))]
 
 # get texture names
-tex_names = [tf.split('\\')[-1].replace('.', '_').lower() for tf in tex_files]
+tex_names = [tf.split('\\')[-1].split('.')[0].lower() for tf in tex_files]
 
 for tex in zip(tex_names, tex_files):
     shader, shading_group = createSurfaceShader('lambert', tex[0])
@@ -69,9 +69,18 @@ connectAttr(light1.instObjGroups[0], SCENE.defaultLightSet.dagSetMembers[0])
 disconnectAttr(groundPlane[0].getShape().instObjGroups[0], PyNode('initialShadingGroup').dagSetMembers[0])
 
 for tex_name in tex_names:
-    #  sets(shaders_groups[tex_name+'SG'], forceElement=groundPlane[0])
-    out_im = os.path.join('/', current_folder, tex_name)
     connectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[1], f=1)
+    
+    out_im = os.path.join('/', current_folder, 'output', tex_name)
     saveAs(scene_path, f=1)
-    call("render -r mr -cam renderCam -im %s %s" %(out_im, scene_path))
+    call("render -r mr -cam renderCam -im %s -v 0 %s" %(out_im+'_shad', scene_path))
+
+    occluder[0].getShape().setAttr('castsShadows', False);
+
+    out_im = os.path.join('/', current_folder, 'output', tex_name)
+    saveAs(scene_path, f=1)
+    call("render -r mr -cam renderCam -im %s -v 0 %s" %(out_im+'_noshad', scene_path))
+
+    occluder[0].getShape().setAttr('castsShadows', True);
+
     disconnectAttr(groundPlane[0].getShape().instObjGroups[0], shaders_groups[tex_name+'SG'].dagSetMembers[1])
