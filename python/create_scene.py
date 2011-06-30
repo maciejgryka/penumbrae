@@ -15,7 +15,7 @@ def disconnectGroundPlaneFromShader(shader_name):
 def renderScene(out_im, scene_path):
     # render shadow image
     saveAs(scene_path, f=1)
-    call("render -r mr -cam renderCam -im %s -v 0 %s" %(out_im+'_shad', scene_path))
+    call("render -r mr -cam renderCam -im %s -v 0 %s" %(out_im, scene_path))
 
 def castShadow(cast):
     occluder[0].getShape().setAttr('castsShadows', cast);
@@ -80,7 +80,7 @@ light1Parent.scaleX.set(0.5);
 light1Parent.scaleZ.set(0.5);
 # set light attributes
 light1.setAttr('decayRate', 2)
-light1.setAttr('intensity', 100)
+light1.setAttr('intensity', 50)
 light1.setAttr('useRayTraceShadows', True)
 light1.setAttr('shadowRays', 100)
 light1.setAttr('areaLight', True)

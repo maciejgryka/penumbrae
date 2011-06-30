@@ -6,6 +6,6 @@ function im = readSCDIm(path)
     end
     
     if isa(im, 'uint8')
-        im = im ./ 255;
+        im = double(im) ./ 255;
     end
 end
