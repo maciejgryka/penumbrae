@@ -1,53 +1,28 @@
-function saveDescriptors(shad, noshad)
-    date = '2011-06-13';
-    suffix = 'plain';
-    [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
+function saveDescriptors()
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-06-30/test/', 'png');
     
-    rough = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' date '\' date '_rough4_shad.tif']);
-    rough = rough(150:249, 370:469);
-    
-    rough1 = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' date '\' date '_rough1_shad.tif']);
-    rough1 = rough1(150:249, 370:469);
-    
-    wood2 = readSCDIm(['C:\Work\research\shadow_removal\penumbrae\images\' date '\' date '_wood2_shad.tif']);
-    wood2 = wood2(150:249, 370:469);
-    
-    n_ims = 2;
-    
-    % cell containing in each row an image from which to caluclate 
-    % descriptors as well as list of pixel coords at which the descriptors
-    % should be centered
-    shadmatte = cell(n_ims, 1);
-    
+    n_ims = length(shads);
+
     for sc = 1:length(scales)
         fprintf('Computing descriptors at scale %i...\n', scales(sc));
         len = scales(sc);
 
         % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, scales(sc));
-        pixel = getPenumbraPixels(penumbra_mask_s);
+        mask_s = getPenumbraMaskAtScale(masks{sc}, scales(sc));
+        pixel = getPenumbraPixels(mask_s);
         if isnan(pixel)
             fprintf('\tno descriptors and this scale\n');
             continue;
         end
-            
-        shadmatte{1,1} = shad;
-        shadmatte{2,1} = rough;
-%         shadmatte{3,1} = rough1;
-%         shadmatte{4,1} = wood2;
-        shadmatte{1,2} = pixel;
-        shadmatte{2,2} = pixel;
-%         shadmatte{3,2} = pixel;
-%         shadmatte{4,2} = pixel;
         
         % overall number of descriptors to find equals the sum of pixels
-        descrs = repmat(PenumbraDescriptor(), size(cat(1, shadmatte{:,2}), 1), 1);
+        descrs = repmat(PenumbraDescriptor(), size(cat(1, pixels_s{:,sc}), 1), 1);
 
         curr_descr = 1;
         for i = 1:n_ims
             fprintf('\timage %i...\n', i);
-            for p = 1:size(pixel,1)
-                descrs(curr_descr) = PenumbraDescriptor(shadmatte{i,1}, shadmatte{i,2}(p,:), n_angles, len, matte);
+            for p = 1:size(pixels_s{i, sc},1)
+                descrs(curr_descr) = PenumbraDescriptor(shads{sc}, pixels_s{i, sc}(p,:), n_angles, len, mattes{sc});
 
                 curr_descr = curr_descr+1;
             end
@@ -73,8 +48,6 @@ function saveDescriptors(shad, noshad)
         addpath('C:\Work\research\dev\LMNN\helperfunctions')
         
         % assign labels
-        labels = 0:0.1:1;
-        
         spoke_labels = repmat(center_pixels, 1, n_angles*2)';
         spoke_labels = floor(spoke_labels(:)*10)/10;
         
