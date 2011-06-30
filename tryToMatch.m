@@ -1,16 +1,17 @@
 function tryToMatch()
-    date = '2011-06-13';
-    suffix = 'wood1';
-    [shad noshad matte penumbra_mask n_angles scales] = prepareEnv(date, suffix);
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-06-30/test/', 'png');
     
     k = 1;
     
-    mattes = cell(length(scales));
-
+    shad = shads{1};
+    
     for sc = 1:length(scales)
         fprintf('Computing matte at scale %i...\n', scales(sc));
         len = scales(sc);
+        mask_s = masks_s{1,sc};
+        pixel_s = pixels_s{1,sc};
         
+        % load training data
         if exist(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], 'file')
             load(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat']);
         else
@@ -19,40 +20,40 @@ function tryToMatch()
         end
 
         recovered_matte = ones(size(shad));
-        recovered_mx = zeros(size(recovered_matte));
-        recovered_my = zeros(size(recovered_matte));
+%         recovered_mx = zeros(size(recovered_matte));
+%         recovered_my = zeros(size(recovered_matte));
         
-        % get pixels where descriptors at given sale can be calculated
-        penumbra_mask_s = getPenumbraMaskAtScale(penumbra_mask, scales(sc));
-        pixel = getPenumbraPixels(penumbra_mask_s);
-        if isnan(pixel)
+        if isnan(pixel_s)
             fprintf('\tno descriptors and this scale\n');
             continue;
         end
-        
+
         fprintf('\tloading/calculating descriptors...\n');
 
-        % current (test) descriptors
-        c_descrs = repmat(PenumbraDescriptor, size(pixel,1), 1);
-        for n = 1:size(pixel,1)
-            c_descrs(n) = PenumbraDescriptor(shad, pixel(n,:), n_angles, len);
+        compute_c_descrs = 1;
+        if compute_c_descrs
+            % current (test) descriptors
+            c_descrs = repmat(PenumbraDescriptor, size(pixel_s,1), 1);
+            for n = 1:size(pixel_s,1)
+                c_descrs(n) = PenumbraDescriptor(shad, pixel_s(n,:), n_angles, len);
+            end
+            % current (test) spokes
+            c_spokes = cat(1,c_descrs(:).spokes);
+            save(['c_descrs/c_descrs_' 'test' '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
+        else
+            load(['c_descrs/c_descrs_' 'test' '_' int2str(scales(sc)) '.mat']);
         end
-        % current (test) spokes
-        c_spokes = cat(1,c_descrs(:).spokes);
-        save(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat'], 'c_descrs', 'c_spokes');
-
-%         load(['c_descrs/c_descrs_' suffix '_' int2str(scales(sc)) '.mat']);
         
-        % matte gradient values for descriptors in training set
-        cp_mdx = cat(1,descrs(:).center_pixel_dx);
-        cp_mdy = cat(1,descrs(:).center_pixel_dy);
+%         % matte gradient values for descriptors in training set
+%         cp_mdx = cat(1,descrs(:).center_pixel_dx);
+%         cp_mdy = cat(1,descrs(:).center_pixel_dy);
         
         fprintf('\tnormalizing...\n');
         n_spokes = size(c_spokes,1);
         c_spokes = (c_spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
         fprintf('\tapplying transformation...\n');
-        c_spokes = (L*c_spokes')';
+        c_spokes_t = (L*c_spokes')';
         % cull the spokes and c_spokes matrices to include only gradient or
         % only intensity
 %             % only gradient
@@ -63,7 +64,7 @@ function tryToMatch()
 %             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
         
         fprintf('\tfinding nearest neighbors...\n');
-        [best_descrs dists] = knnsearch(spokes_t,c_spokes,'K', k, 'NSMethod', 'kdtree');
+        [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
         
         fprintf('\tweighting suggestions...\n');
         % turn spoke indices into descriptor indices
@@ -74,63 +75,57 @@ function tryToMatch()
         
         % turn descriptor indices into matte values (and gradient values)
         best_mattes = center_pixels(best_descrs);
-        best_mattes_dx = cp_mdx(best_descrs);
-        best_mattes_dy = cp_mdy(best_descrs);
-        
-%         % for each descriptor bin the proposed values into 10 bins and
-%         % extract histogram peak
-%         [matte_hists xout] = hist(best_mattes, 100);
-%         [c i] = max(matte_hists, [], 1);
-%         best_mattes = xout(i);
-        
+%         best_mattes_dx = cp_mdx(best_descrs);
+%         best_mattes_dy = cp_mdy(best_descrs);
+
         % distance-based weights
         wg = (max(max(dists))-dists);
         wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
         best_mattes = sum(best_mattes .* wg, 2);
-        best_mattes_dx = sum(best_mattes_dx .* wg, 2);
-        best_mattes_dy = sum(best_mattes_dy .* wg, 2);
+%         best_mattes_dx = sum(best_mattes_dx .* wg, 2);
+%         best_mattes_dy = sum(best_mattes_dy .* wg, 2);
         
-        grad_mags_gt = sqrt(cp_mdx.^2 + cp_mdy.^2);
+%         grad_mags_gt = sqrt(cp_mdx.^2 + cp_mdy.^2);
 %         grad_angs_gt = atan(cp_mdy ./ cp_mdx);
-        show4plots(center_pixels, grad_mags_gt, center_pixels_int);
+%         show4plots(center_pixels, grad_mags_gt, center_pixels_int);
         
-        grad_mags = sqrt(best_mattes_dx.^2 + best_mattes_dy.^2);
+%         grad_mags = sqrt(best_mattes_dx.^2 + best_mattes_dy.^2);
 %         grad_angs = atan(best_mattes_dy ./ best_mattes_dx);
-        show4plots(best_mattes, grad_mags, shad(sub2ind(size(shad), pixel(:,2), pixel(:,1))));
+%         show4plots(best_mattes, grad_mags, shad(sub2ind(size(shad), pixel_s(:,2), pixel_s(:,1))));
 
-        recovered_matte(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes;
-        mattes{sc} = recovered_matte;
+        recovered_matte(sub2ind(size(shad), pixel_s(:,2), pixel_s(:,1))) = best_mattes;
+%         mattes{sc} = recovered_matte;
         
-        recovered_mx(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes_dx;
-        recovered_my(sub2ind(size(matte), pixel(:,2), pixel(:,1))) = best_mattes_dy;
+%         recovered_mx(sub2ind(size(matte), pixel_s(:,2), pixel_s(:,1))) = best_mattes_dx;
+%         recovered_my(sub2ind(size(matte), pixel_s(:,2), pixel_s(:,1))) = best_mattes_dy;
         
-        err = mean(abs(matte(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
+%         err = mean(abs(matte(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
+%         subplot(2,3,[1 4]);
+%             imshow(shad);
+%         subplot(2,3,2);
+%             ms = matte .* (mask_s == 1);
+%             ms(ms == 0) = 1;
+%             imshow(ms);
+%         subplot(2,3,5);
+%         imshow(imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+%         subplot(2,3,6);
+%         imshow(shad ./ imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+%         subplot(2,3,3);
+%         imshow(noshad);
+
         subplot(2,3,[1 4]);
             imshow(shad);
         subplot(2,3,2);
-            ms = matte .* (penumbra_mask_s == 1);
+            ms = mattes{1} .* (mask_s == 1);
             ms(ms == 0) = 1;
             imshow(ms);
         subplot(2,3,5);
-        imshow(imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+        imshow(recovered_matte);
         subplot(2,3,6);
-        imshow(shad ./ imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+        imshow(shad ./ recovered_matte);
         subplot(2,3,3);
-        imshow(noshad);
-
-        subplot(2,3,[1 4]);
-            imshow(shad);
-        subplot(2,3,2);
-            ms = matte .* (penumbra_mask_s == 1);
-            ms(ms == 0) = 1;
-            imshow(ms);
-        subplot(2,3,5);
-        imshow(mattes{sc});
-        subplot(2,3,6);
-        imshow(shad ./ mattes{sc});
-        subplot(2,3,3);
-        imshow(noshad);
+        imshow(shad ./ ms);
         
 %         [mdx mdy] = gradient(matte);
 %         errim_int = abs(matte - mattes{sc});
@@ -139,8 +134,8 @@ function tryToMatch()
 %         
 % %         figure;
 %         subplot(1,2,1);
-%         imshow(errim_int .* penumbra_mask_s);   
+%         imshow(errim_int .* mask_s);   
 %         subplot(1,2,2);
-%         imshow(sqrt(errim_dx.^2 + errim_dy.^2) .* penumbra_mask_s);
+%         imshow(sqrt(errim_dx.^2 + errim_dy.^2) .* mask_s);
     end
 end
