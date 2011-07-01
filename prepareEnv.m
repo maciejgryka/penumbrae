@@ -5,7 +5,7 @@ function [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepare
     
     n_angles = 2;
 %     scales = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100];
-    scales = [3, 5, 10, 20];
+    scales = [5, 9, 24];
     
     if nargin == 0
         training_dir = default_training_dir;

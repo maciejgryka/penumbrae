@@ -43,7 +43,7 @@ classdef PenumbraDescriptor
             ang_step = pi/n_angles;
             spoke_index = 1;
             for ang = 0:ang_step:pi-ang_step
-                [spoke_offset(1) spoke_offset(2)] = pol2cart(ang, len);
+                [spoke_offset(1) spoke_offset(2)] = pol2cart(ang, len-1);
                 [prev_scales_offset(1) prev_scales_offset(2)] = pol2cart(ang, prev_scales_sum);
                 
                 d.points(spoke_index, 1:2) = d.center - prev_scales_offset;
@@ -82,7 +82,7 @@ classdef PenumbraDescriptor
                 plot_color = [1, 1, 1];
             end
             for s = 1:size(d.spokes,1)
-                plot([d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], 'color', plot_color);
+                plot([d.points(s, 1) d.points(s, 3)], [d.points(s, 2) d.points(s, 4)], 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');
         end

@@ -1,23 +1,29 @@
 function saveDescriptors()
-    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output', 'png');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/', 'png');
     
     n_ims = length(shads);
 
     for sc = 1:length(scales)
         fprintf('Computing descriptors at scale %i...\n', scales(sc));
-        len = scales(sc);
+        if sc == 1
+            prev_scales_sum = 0;
+            len = scales(sc);
+        else
+            prev_scales_sum = sum(scales(1:sc-1));
+            len = scales(sc) - prev_scales_sum;
+        end
 
-        % overall number of descriptors to find equals the sum of pixels
+        % overall number of descriptors to find equals the number of pixels
         descrs = repmat(PenumbraDescriptor(), size(cat(1, pixels_s{:,sc}), 1), 1);
 
         curr_descr = 1;
         for i = 1:n_ims
-            if isnan(pixels_s{i, sc})
+            if isempty(pixels_s{i, sc})
                 continue;
             end
             fprintf('\timage %i...\n', i);
             for p = 1:size(pixels_s{i, sc},1)
-                descrs(curr_descr) = PenumbraDescriptor(shads{sc}, pixels_s{i, sc}(p,:), n_angles, len, mattes{sc});
+                descrs(curr_descr) = PenumbraDescriptor(shads{i}, pixels_s{i, sc}(p,:), n_angles, len, prev_scales_sum, mattes{sc});
                 curr_descr = curr_descr+1;
             end
         end
@@ -47,7 +53,7 @@ function saveDescriptors()
         L = 1;
         
         spokes_t = (L*spokes')';
-%         drawDescr(shad, descrs);
+%         drawDescr(shads{1}, descrs);
         fprintf('\tsaving results...\n');
         save(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], ...
                 'descrs', ...
