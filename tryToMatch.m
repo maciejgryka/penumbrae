@@ -1,5 +1,5 @@
 function tryToMatch()
-    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-06-30/test/', 'png');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/test/', 'png');
     
     k = 1;
     
@@ -12,8 +12,9 @@ function tryToMatch()
         pixel_s = pixels_s{1,sc};
         
         % load training data
-        if exist(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], 'file')
-            load(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat']);
+        data_file_path = ['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'];
+        if exist(data_file_path, 'file')
+            load(data_file_path);
         else
             fprintf('\tno data at this scale\n');
             continue;
@@ -59,12 +60,16 @@ function tryToMatch()
 %             % only gradient
 %             spokes = spokes(:,1:size(spokes,2)/2);
 %             c_spokes = c_spokes(:,1:size(c_spokes,2)/2);
-%             % only intensity
-%             spokes = spokes(:,size(spokes,2)/2:size(spokes,2));
-%             c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
+            % only intensity
+            spokes = spokes(:,size(spokes,2)/2:size(spokes,2));
+            c_spokes = c_spokes(:,size(c_spokes,2)/2:size(c_spokes,2));
         
         fprintf('\tfinding nearest neighbors...\n');
-        [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
+        if L == 1
+            [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
+        else
+            [best_descrs dists] = knnsearch(spokes_t,c_spokes_t,'K', k, 'NSMethod', 'kdtree');
+        end
         
         fprintf('\tweighting suggestions...\n');
         % turn spoke indices into descriptor indices
@@ -79,7 +84,11 @@ function tryToMatch()
 %         best_mattes_dy = cp_mdy(best_descrs);
 
         % distance-based weights
-        wg = (max(max(dists))-dists);
+        if max(max(dists)) == 0
+            wg = 1 - dists;
+        else
+            wg = (max(max(dists))-dists);
+        end
         wg =  wg ./ repmat(sum(wg, 2), 1, n_angles*2*k);
         best_mattes = sum(best_mattes .* wg, 2);
 %         best_mattes_dx = sum(best_mattes_dx .* wg, 2);
@@ -101,18 +110,19 @@ function tryToMatch()
         
 %         err = mean(abs(matte(mattes{sc} < 1) - mattes{sc}(mattes{sc} < 1)))
         
+%         bl = 3;
 %         subplot(2,3,[1 4]);
 %             imshow(shad);
 %         subplot(2,3,2);
-%             ms = matte .* (mask_s == 1);
+%             ms = mattes{1} .* (mask_s == 1);
 %             ms(ms == 0) = 1;
 %             imshow(ms);
 %         subplot(2,3,5);
-%         imshow(imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+%         imshow(imfilter(recovered_matte, fspecial('gaussian', bl, bl),'replicate'));
 %         subplot(2,3,6);
-%         imshow(shad ./ imfilter(mattes{sc}, fspecial('gaussian', 5, 5),'replicate'));
+%         imshow(shad ./ imfilter(recovered_matte, fspecial('gaussian', bl, bl),'replicate'));
 %         subplot(2,3,3);
-%         imshow(noshad);
+%         imshow(shad ./ ms);
 
         subplot(2,3,[1 4]);
             imshow(shad);

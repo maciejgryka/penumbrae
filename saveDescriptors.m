@@ -1,5 +1,5 @@
 function saveDescriptors()
-    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-06-30/subset/', 'png');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output', 'png');
     
     n_ims = length(shads);
 

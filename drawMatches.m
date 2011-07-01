@@ -1,51 +1,62 @@
 function drawMatches()
-    [shad noshad matte penumbra_mask p_pix n_angles len n_descrs pixel] = prepareEnv('2011-05-16', 'rough1');
-    load('descrs_small_all.mat');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/test/', 'png');
     
-    k = 2;
+    k = 5;
+    sc = 1;
+    shad = shads{1};
+    len = scales(sc);
+    
+    % load training data
+    data_file_path = ['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'];
+    if exist(data_file_path, 'file')
+        load(data_file_path);
+    else
+        error('No data at this scale\n');
+    end
     
 %     error_gt = zeros(n_descrs, 1);
 %     error_gt_img = zeros(size(shad));
 %     inconsistency = zeros(n_descrs, 1);
 %     inconsistency_img = zeros(size(shad));
     
-    cols = ['g' 'w' 'c' 'm' 'y'];
+    cols = ['r' 'g' 'b' 'c' 'm' 'y' 'w'];
     
-    for n = 1:n_descrs
-        c_descr = PenumbraDescriptor(shad, pixel(n,:), n_angles, len, penumbra_mask);
+    for n = 1:length(descrs)
+        c_descr = PenumbraDescriptor(shad, pixels_s{1,sc}(n,:), n_angles, len, masks_s{sc});
         
-        [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descr.slices_shad_cat),'K', k);
+%         [best_descrs dists] = knnsearch(slices_shad,cat(1,c_descr.slices_shad_cat),'K', k);
+        [best_descrs dists] = knnsearch(spokes,c_descr.spokes,'K', k, 'NSMethod', 'kdtree');
 
-        subplot(2,2,1:2); imshow(shad); hold on; c_descr.draw('r');
-
-        for d = 1:k
-            descrs(best_descrs(d)).draw(cols(d));
+        subplot(2,2,1);
+        plot(c_descr.spokes(1,:), 'k');
+        hold on;
+        for nn = 1:k
+            plot(spokes(best_descrs(1,nn),:), cols(nn));
         end
         hold off;
-
-%         subplot(2,2,3:4); 
-%             plot(c_descr.slices_shad{1}, 'g'); hold on;
-%             plot(c_descr.center_inds(1), c_descr.slices_shad{1}(c_descr.center_inds(1)), 'xr');
-%             plot(descrs{best_descr}.slices_shad{1}, 'b');
-%             plot(descrs{best_descr}.center_inds(1), descrs{best_descr}.slices_shad{1}(descrs{best_descr}.center_inds(1)), 'xr'); 
-%             hold off;
-        subplot(2,2,3);
-%         [s1 s2] = getCompatibleSlices(c_descr.slices_shad{1}, ...
-%                                       descrs(best_descr(1)).slices_shad{1}, ...
-%                                       c_descr.center_inds(1), ...
-%                                       descrs(best_descr(1)).center_inds(1));
-        s1 = c_descr.slices_shad_cat;
-        s2 = descrs(best_descrs(1)).slices_shad_cat;
-%         s3 = descrs(n+n_descrs).slices_shad_cat;
-        plot(s1, 'r'); hold on;
-        plot(s2, 'g');
-%         plot(s3, 'b'); 
+        
+        subplot(2,2,2);
+        plot(c_descr.spokes(2,:), 'k');
+        hold on;
+        for nn = 1:k
+            plot(spokes(best_descrs(2,nn),:), cols(nn));
+        end
         hold off;
+        
+        subplot(2,2,3);
+        plot(c_descr.spokes(2,:), 'k');
+        hold on;
+        for nn = 1:k
+            plot(spokes(best_descrs(3,nn),:), cols(nn));
+        end
+        hold off;
+        
         subplot(2,2,4);
-        imshow(matte);
-%         hold on;
-%         descrs(n+n_descrs).draw('b');
-%         plot((error_gt), 'g'); hold on;
-%         plot((inconsistency), 'b'); hold off;
+        plot(c_descr.spokes(3,:), 'k');
+        hold on;
+        for nn = 1:k
+            plot(spokes(best_descrs(4,nn),:), cols(nn));
+        end
+        hold off;
     end
 end

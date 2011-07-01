@@ -76,8 +76,9 @@ light1Parent = light1.getParent()
 # set light position
 light1Parent.translateY.set(7.5)
 light1Parent.rotateX.set(-90.0)
-light1Parent.scaleX.set(0.5);
-light1Parent.scaleZ.set(0.5);
+# light1Parent.scaleX.set(0.5);
+# light1Parent.scaleZ.set(0.5);
+
 # set light attributes
 light1.setAttr('decayRate', 2)
 light1.setAttr('intensity', 50)
