@@ -10,7 +10,7 @@ classdef PenumbraDescriptor
     end
     
     methods
-        function d = PenumbraDescriptor(shad, pixel, n_angles, len, matte)
+        function d = PenumbraDescriptor(shad, pixel, n_angles, len, prev_scales_sum, matte)
         %PENUMBRADESCRIPTOR returns descriptor at PIXEL
             if nargin==0
                 d.center = 0;
@@ -28,25 +28,29 @@ classdef PenumbraDescriptor
                 d.center_pixel_dy = dy(pixel(2), pixel(1));
             else
                 d.center_pixel = NaN;
+                d.center_pixel_dx = NaN;
+                d.center_pixel_dy = NaN;
             end
             d.center_pixel_int = shad(pixel(2), pixel(1));
             
-            hl = floor(len/2); % half length
-            
-            % each spoke has two endpoints: d.center and one of d.points
-            % there are two spokes at each angle
-            d.points = zeros(2*n_angles, 2);
-            d.spokes = zeros(n_angles*2, 2*(hl+1));
-%             d.spokes = zeros(n_angles*2, hl+1);
-            
+            % each spoke has two endpoints and there are two spokes per angle
+            % each row in d.points is [x1 y1 x2 y2] and represents endpoints for
+            % the corresponding spoke
+            d.points = zeros(n_angles*2, 4);
+            % each spoke vector consists of intensity + gradient
+            d.spokes = zeros(n_angles*2, 2*len);
 
             ang_step = pi/n_angles;
             spoke_index = 1;
             for ang = 0:ang_step:pi-ang_step
-                [pixel_offset(1) pixel_offset(2)] = pol2cart(ang, hl);
+                [spoke_offset(1) spoke_offset(2)] = pol2cart(ang, len);
+                [prev_scales_offset(1) prev_scales_offset(2)] = pol2cart(ang, prev_scales_sum);
                 
-                d.points(spoke_index, :) = d.center - pixel_offset;
-                d.points(spoke_index+1, :) = d.center + pixel_offset;
+                d.points(spoke_index, 1:2) = d.center - prev_scales_offset;
+                d.points(spoke_index, 3:4) = d.center - prev_scales_offset - spoke_offset;
+                
+                d.points(spoke_index+1, 1:2) = d.center + prev_scales_offset;
+                d.points(spoke_index+1, 3:4) = d.center + prev_scales_offset + spoke_offset;
 
                 d = d.fillSpoke(shad, spoke_index);
                 d = d.fillSpoke(shad, spoke_index+1);
@@ -56,10 +60,8 @@ classdef PenumbraDescriptor
         end
         
         function d = fillSpoke(d, im, sp)
-            sl = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:))/2);
+            sl = improfile(im, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/2);
             d.spokes(sp,:) = [gradient(sl)' sl'];
-%             sl = improfile(im, [d.center(1) d.points(sp, 1)], [d.center(2) d.points(sp, 2)], length(d.spokes(sp,:)));
-%             d.spokes(sp,:) = gradient(sl)';
         end
         
         function d = setSliceShad(d, i, slice)
@@ -80,7 +82,7 @@ classdef PenumbraDescriptor
                 plot_color = [1, 1, 1];
             end
             for s = 1:size(d.spokes,1)
-                plot([d.center(1) d.points(s, 1)], [d.center(2) d.points(s, 2)], 'color', plot_color);
+                plot([d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');
         end
