@@ -33,6 +33,11 @@ classdef PenumbraDescriptor
             end
             d.center_pixel_int = shad(pixel(2), pixel(1));
             
+            [dx dy] = gradient(shad);
+            % normalized gradient-direction image
+            shad_grad = (atan(dy./dx) + pi)./(2*pi);
+            shad_grad(isnan(shad_grad)) = 0;
+            
             % each spoke has two endpoints and there are two spokes per angle
             % each row in d.points is [x1 y1 x2 y2] and represents endpoints for
             % the corresponding spoke
@@ -52,16 +57,17 @@ classdef PenumbraDescriptor
                 d.points(spoke_index+1, 1:2) = d.center + prev_scales_offset;
                 d.points(spoke_index+1, 3:4) = d.center + prev_scales_offset + spoke_offset;
 
-                d = d.fillSpoke(shad, spoke_index);
-                d = d.fillSpoke(shad, spoke_index+1);
+                d = d.fillSpoke(shad, shad_grad, spoke_index);
+                d = d.fillSpoke(shad, shad_grad, spoke_index+1);
 
                 spoke_index = spoke_index + 2;
             end
         end
         
-        function d = fillSpoke(d, im, sp)
+        function d = fillSpoke(d, im, im_grad, sp)
             sl = improfile(im, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/2);
-            d.spokes(sp,:) = [gradient(sl)' sl'];
+            sl_grad = improfile(im_grad, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/2);
+            d.spokes(sp,:) = [sl_grad' sl'];
         end
         
         function d = setSliceShad(d, i, slice)

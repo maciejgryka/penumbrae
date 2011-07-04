@@ -1,7 +1,7 @@
 function tryToMatch()
-    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/test/', 'png');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-07-04/test/', 'png');
     
-    k = 500;
+    k = 100;
     
     shad = shads{1};
     

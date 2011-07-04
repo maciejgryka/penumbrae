@@ -1,5 +1,5 @@
 function saveDescriptors()
-    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/', 'png');
+    [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-07-04/subset/', 'png');
     
     n_ims = length(shads);
 
@@ -50,7 +50,7 @@ function saveDescriptors()
         spoke_labels = floor(spoke_labels(:)*10)/10;
         
         L = 1;
-%         [L,Det]=lmnn(spokes',spoke_labels','quiet',1);
+%         [L,Det]=lmnn( spokes',spoke_labels','quiet',1);
         
         spokes_t = (L*spokes')';
 %         drawDescr(shads{1}, descrs);
