@@ -49,8 +49,8 @@ function saveDescriptors()
         spoke_labels = repmat(center_pixels, 1, n_angles*2)';
         spoke_labels = floor(spoke_labels(:)*10)/10;
         
-%         [L,Det]=lmnn(spokes',spoke_labels','quiet',1);
         L = 1;
+%         [L,Det]=lmnn(spokes',spoke_labels','quiet',1);
         
         spokes_t = (L*spokes')';
 %         drawDescr(shads{1}, descrs);

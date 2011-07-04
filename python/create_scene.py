@@ -1,4 +1,4 @@
-import os
+import os, re
 from subprocess import call
 from pymel.core import *
 
@@ -19,9 +19,10 @@ def renderScene(out_im, scene_path):
 
 def castShadow(cast):
     occluder[0].getShape().setAttr('castsShadows', cast);
+    PyNode('occluder_sphereShape').setAttr('castsShadows', cast); 
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
-base_path = os.path.join('/', current_folder, 'base.mb')
+base_path = os.path.join('/', current_folder, 'base-2011-07-04.mb')
 scene_path = os.path.join('/', current_folder, 'scene.mb')
 
 # open base file if exists, otherwise create a new one
@@ -75,9 +76,10 @@ light1 = nt.AreaLight(name='light1')
 light1Parent = light1.getParent()
 # set light position
 light1Parent.translateY.set(7.5)
+light1Parent.translateX.set(2.0)
 light1Parent.rotateX.set(-90.0)
-# light1Parent.scaleX.set(0.5);
-# light1Parent.scaleZ.set(0.5);
+light1Parent.scaleX.set(2.0);
+light1Parent.scaleZ.set(10.0);
 
 # set light attributes
 light1.setAttr('decayRate', 2)
@@ -90,9 +92,16 @@ light1.setAttr('areaHiSamples', 100)
 # make sure the light illuminates everything
 connectAttr(light1.instObjGroups[0], SCENE.defaultLightSet.dagSetMembers[0])
 
+
+
 # disconnect groundPlaneShape from default shader
+dest = connectionInfo(groundPlane[0].getShape().instObjGroups[0], dfs=True)[0]
+dsmn = re.search(r'([0-9])', dest).groups(0)[0];
+
+#debug_here()
+
 disconnectAttr(groundPlane[0].getShape().instObjGroups[0], 
-               PyNode('initialShadingGroup').dagSetMembers[0])
+               PyNode(dest.split('.')[0]).dagSetMembers[int(dsmn)])
 
 for tex_name in tex_names:
     connectGroundPlaneToShader(tex_name)

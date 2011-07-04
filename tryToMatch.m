@@ -1,7 +1,7 @@
 function tryToMatch()
     [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('python/output/test/', 'png');
     
-    k = 50;
+    k = 500;
     
     shad = shads{1};
     
@@ -36,7 +36,7 @@ function tryToMatch()
 
         fprintf('\tloading/calculating descriptors...\n');
 
-        compute_c_descrs = 1;
+        compute_c_descrs = 0;
         if compute_c_descrs
             % current (test) descriptors
             c_descrs = repmat(PenumbraDescriptor, size(pixel_s,1), 1);
@@ -67,7 +67,7 @@ function tryToMatch()
             
         fprintf('\tfinding nearest neighbors...\n');
         if L == 1
-            [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'exhaustive');
+            [best_descrs dists] = knnsearch(spokes,c_spokes,'K', k, 'NSMethod', 'kdtree');
         else
             [best_descrs dists] = knnsearch(spokes_t,c_spokes_t,'K', k, 'NSMethod', 'kdtree');
         end
@@ -85,6 +85,7 @@ function tryToMatch()
         % distance-based weights
         if max(max(dists)) == 0
             wg = 1 - dists;
+%             wg = 1 / dists;
         else
             wg = repmat(max(dists, [], 2), 1, n_angles*2*k) - dists;
 %             wg = 1./dists;
