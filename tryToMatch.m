@@ -1,7 +1,7 @@
 function tryToMatch()
     [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-07-04/test/', 'png');
     
-    k = 100;
+    k = 5;
     
     shad = shads{1};
     
@@ -36,7 +36,7 @@ function tryToMatch()
 
         fprintf('\tloading/calculating descriptors...\n');
 
-        compute_c_descrs = 0;
+        compute_c_descrs = 1;
         if compute_c_descrs
             % current (test) descriptors
             c_descrs = repmat(PenumbraDescriptor, size(pixel_s,1), 1);
