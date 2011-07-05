@@ -2,6 +2,7 @@ function saveDescriptors()
     [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-07-04/subset/', 'png');
     
     n_ims = length(shads);
+%     n_spokes = 2*n_angles;
 
     for sc = 1:length(scales)
         fprintf('Computing descriptors at scale %i...\n', scales(sc));
@@ -29,37 +30,39 @@ function saveDescriptors()
         end
     
         fprintf('\tconcatenating slices...\n');
-        spokes = (cat(1,descrs(:).spokes));
+        spokes_all = (cat(1,descrs(:).spokes));
         center_pixels = cat(1,descrs(:).center_pixel);
         center_pixels_int = cat(1,descrs(:).center_pixel_int);
         
         fprintf('\tnormalizing...\n');
-        n_spokes = size(spokes,1);
-        spokes_mu = mean(spokes);
-        spokes_std = std(spokes);
+        n_spokes = size(spokes_all,1);
+        spokes_mu = mean(spokes_all);
+        spokes_std = std(spokes_all);
         
-        spokes = (spokes - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
+        spokes_all = (spokes_all - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
-        % Do distance learning, transform the space
-        addpath('C:/Work/research/dev/LMNN')
-        addpath('C:/Work/research/dev/LMNN\mexfunctions')
-        addpath('C:/Work/research/dev/LMNN\helperfunctions')
+        % create separate array for each spoke in [1, 2, ..., 2*n_angles]
+        spokes = cell(2*n_angles, 1);
+        for sa = 1:2*n_angles
+            spokes{sa} = spokes_all(sa:2*n_angles:length(spokes_all), :);
+        end
         
-        % assign labels
-        spoke_labels = repmat(center_pixels, 1, n_angles*2)';
-        spoke_labels = floor(spoke_labels(:)*10)/10;
+%         % Do distance learning, transform the space
+%         addpath('C:/Work/research/dev/LMNN')
+%         addpath('C:/Work/research/dev/LMNN/mexfunctions')
+%         addpath('C:/Work/research/dev/LMNN/helperfunctions')
+%         % assign labels
+%         spoke_labels = repmat(center_pixels, 1, n_angles*2)';
+%         spoke_labels = floor(spoke_labels(:)*10)/10;
+%         L = 1;
+% %         [L,Det]=lmnn( spokes',spoke_labels','quiet',1);
+%         spokes_t = (L*spokes_all')';
         
-        L = 1;
-%         [L,Det]=lmnn( spokes',spoke_labels','quiet',1);
-        
-        spokes_t = (L*spokes')';
 %         drawDescr(shads{1}, descrs);
         fprintf('\tsaving results...\n');
         save(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], ...
                 'descrs', ...
                 'spokes', ...
-                'spokes_t', ...
-                'L', ...
                 'spokes_mu', ...
                 'spokes_std', ...
                 'center_pixels', ...
