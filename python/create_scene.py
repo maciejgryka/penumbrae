@@ -19,11 +19,11 @@ def renderScene(out_im, scene_path):
 
 def castShadow(cast):
     occluder[0].getShape().setAttr('castsShadows', cast);
-    PyNode('occluder_sphereShape').setAttr('castsShadows', cast); 
+#    PyNode('occluder_sphereShape').setAttr('castsShadows', cast); 
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
-base_path = os.path.join('/', current_folder, 'base-2011-07-04.mb')
-scene_path = os.path.join('/', current_folder, 'scene.mb')
+base_path = os.path.join('/', current_folder, 'base.mb')
+scene_path = os.path.join('/', current_folder, 'scene_straight.mb')
 
 # open base file if exists, otherwise create a new one
 if os.path.exists(base_path):
@@ -105,7 +105,7 @@ disconnectAttr(groundPlane[0].getShape().instObjGroups[0],
 
 for tex_name in tex_names:
     connectGroundPlaneToShader(tex_name)
-    out_im = os.path.join('/', current_folder, 'output', tex_name)
+    out_im = os.path.join('/', current_folder, 'output_straight', tex_name)
 
     # render shadow image
     castShadow(True)
