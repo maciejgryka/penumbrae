@@ -76,17 +76,17 @@ function tryToMatch()
         best_descrs = cell(2*n_angles, 1);
         for sp = 1:2*n_angles
             best_descrs{sp} = knnsearch(spokes{sp},c_spokes{sp},'K', k, 'NSMethod', 'kdtree');
-            best_descrs{sp} = getBestDescrs(best_descrs{sp}, descrs, c_spokes_all, k);
+            best_descrs{sp} = getBestDescrs(best_descrs{sp}, descrs_vectors(best_descrs{sp}, :), c_spokes_all, k);
         end
 
-        best_mattes = zeros(100, 100, 2*n_angles);
-        best_mattes(:,:,1) = cat(1, descrs(best_descrs{1}).center_pixel);
-        best_mattes(:,:,2) = cat(1, descrs(best_descrs{2}).center_pixel);
-        best_mattes(:,:,3) = cat(1, descrs(best_descrs{3}).center_pixel);
-        best_mattes(:,:,4) = cat(1, descrs(best_descrs{4}).center_pixel);
+%         best_mattes = zeros(100, 100, 2*n_angles);
+%         best_mattes(:,:,1) = cat(1, descrs(best_descrs{1}).center_pixel);
+%         best_mattes(:,:,2) = cat(1, descrs(best_descrs{2}).center_pixel);
+%         best_mattes(:,:,3) = cat(1, descrs(best_descrs{3}).center_pixel);
+%         best_mattes(:,:,4) = cat(1, descrs(best_descrs{4}).center_pixel);
+%         best_mattes = mean(best_mattes, 3);
 
-        best_mattes = mean(best_mattes, 3);
-        recovered_matte(sub2ind(size(shad), pixel_s(:,2), pixel_s(:,1))) = cat(1, descrs(best_descrs{2}).center_pixel);
+        recovered_matte(sub2ind(size(shad), pixel_s(:,2), pixel_s(:,1))) = cat(1, descrs(best_descrs{1}).center_pixel);
         
 %         err = mean(abs(matte(mattes{sc} < 1) - recovered_matte(mattes{sc} < 1)))
         
@@ -119,18 +119,18 @@ function tryToMatch()
     end
 end
 
-function best_descrs = getBestDescrs(best_descrs, descrs, c_spokes_all, k)
+function best_descrs = getBestDescrs(best_descrs, descrs_vectors, c_spokes_all, k)
 %     % turn spoke indices into descriptor indices
 %     best_descrs = ceil(best_descrs./(n_angles*2));
     % each row in below matrix contains a (len*2)*(2*n_angles) vector
     % representing all spokes of one descriptor
-    descr_vectors = reshape(cat(1,descrs(best_descrs).spokes)', 40, [])';
+%     descr_vectors = reshape(cat(1,descrs(best_descrs).spokes)', 40, [])';
     % same for current (test) descriptors
     c_descr_vectors = reshape(c_spokes_all', 40, [])';
 
     cdvi = repmat(1:size(c_descr_vectors,1), k, 1); % c_descr_vector indices
     c_descr_vectors = c_descr_vectors(cdvi(:), :);
-    d = sum((c_descr_vectors - descr_vectors).^2, 2); % distance from each test descriptor to its k nn
+    d = sum((c_descr_vectors - descrs_vectors).^2, 2); % distance from each test descriptor to its k nn
     d = reshape(d', k, [])';
     [val inds] = min(d, [], 2);  % inds are column indices for best descriptor in each row of best_descrs{sp}
     subs = [(1:size(best_descrs,1))' inds]; % turn column indices into subscripts
