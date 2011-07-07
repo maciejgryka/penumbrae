@@ -109,9 +109,9 @@ function tryToMatch()
         subplot(2,3,2);
             ms = mattes{1} .* (mask_s == 1);
             ms(ms == 0) = 1;
-            imshow(ms);
+            grayOnGreen(ms);
         subplot(2,3,5);
-        imshow(recovered_matte);
+        grayOnGreen(recovered_matte);
         subplot(2,3,6);
         imshow(shad ./ recovered_matte);
         subplot(2,3,3);
