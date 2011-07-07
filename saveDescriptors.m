@@ -16,6 +16,7 @@ function saveDescriptors()
 
         % overall number of descriptors to find equals the number of pixels
         descrs = repmat(PenumbraDescriptor(), size(cat(1, pixels_s{:,sc}), 1), 1);
+        descrs_vectors = zeros(length(descrs), 2*n_angles*2*scales(sc));
 
         curr_descr = 1;
         for i = 1:n_ims
@@ -25,12 +26,13 @@ function saveDescriptors()
             fprintf('\timage %i...\n', i);
             for p = 1:size(pixels_s{i, sc},1)
                 descrs(curr_descr) = PenumbraDescriptor(shads{i}, pixels_s{i, sc}(p,:), n_angles, len, prev_scales_sum, mattes{sc});
+                descrs_vectors(curr_descr, :) = reshape(descrs(curr_descr).spokes', 2*n_angles*2*scales(sc), [])';
                 curr_descr = curr_descr+1;
             end
         end
     
         fprintf('\tconcatenating slices...\n');
-        spokes_all = (cat(1,descrs(:).spokes));
+        spokes_all = cat(1,descrs(:).spokes);
         center_pixels = cat(1,descrs(:).center_pixel);
         center_pixels_int = cat(1,descrs(:).center_pixel_int);
         
@@ -62,6 +64,7 @@ function saveDescriptors()
         fprintf('\tsaving results...\n');
         save(['descrs/descrs_', int2str(n_angles), 'ang_', int2str(scales(sc)), 'sc.mat'], ...
                 'descrs', ...
+                'descrs_vectors', ...
                 'spokes', ...
                 'spokes_mu', ...
                 'spokes_std', ...
