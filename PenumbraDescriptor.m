@@ -35,9 +35,10 @@ classdef PenumbraDescriptor
             
             [dx dy] = gradient(shad);
             % normalized gradient-direction image
-            shad_grad_o = (atan(dy./dx) + pi)./(2*pi);
-            shad_grad_o(isnan(shad_grad_o)) = 0;
-            shad_grad_m = sqrt(dx.^2 + dy.^2);
+            shad_grad_orient = (atan(dy./dx) + pi)./(2*pi);
+            shad_grad_orient(isnan(shad_grad_orient)) = 0;
+            
+%             shad_grad_mag = sqrt(dx.^2 + dy.^2);
             
             % each spoke has two endpoints and there are two spokes per angle
             % each row in d.points is [x1 y1 x2 y2] and represents endpoints for
@@ -45,7 +46,7 @@ classdef PenumbraDescriptor
             d.points = zeros(n_angles*2, 4);
             % each spoke vector consists of intensity + gradient orientation +
             % magnitude
-            d.spokes = zeros(n_angles*2, 3*len);
+            d.spokes = zeros(n_angles*2, 2*len);
 
             ang_step = pi/n_angles;
             spoke_index = 1;
@@ -59,18 +60,18 @@ classdef PenumbraDescriptor
                 d.points(spoke_index+1, 1:2) = d.center + prev_scales_offset;
                 d.points(spoke_index+1, 3:4) = d.center + prev_scales_offset + spoke_offset;
 
-                d = d.fillSpoke(shad, shad_grad_o, shad_grad_m, spoke_index);
-                d = d.fillSpoke(shad, shad_grad_o, shad_grad_m, spoke_index+1);
+                d = d.fillSpoke(shad, shad_grad_orient, spoke_index);
+                d = d.fillSpoke(shad, shad_grad_orient, spoke_index+1);
 
                 spoke_index = spoke_index + 2;
             end
         end
         
-        function d = fillSpoke(d, im, im_grad_o, im_grad_m, sp)
-            sl = improfile(im, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/3);
-            sl_grad_o = improfile(im_grad_o, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/3);
-            sl_grad_m = improfile(im_grad_m, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/3);
-            d.spokes(sp,:) = [sl_grad_o' sl_grad_m' sl'];
+        function d = fillSpoke(d, im, im_grad_o, sp)
+            sl = improfile(im, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/2);
+            sl_grad_o = improfile(im_grad_o, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/2);
+%             sl_grad_m = improfile(im_grad_m, [d.points(sp, 1) d.points(sp, 3)], [d.points(sp, 2) d.points(sp, 4)], length(d.spokes(sp,:))/3);
+            d.spokes(sp,:) = [sl_grad_o' sl'];
         end
         
         function d = setSliceShad(d, i, slice)
@@ -94,6 +95,14 @@ classdef PenumbraDescriptor
                 plot([d.points(s, 1) d.points(s, 3)], [d.points(s, 2) d.points(s, 4)], 'color', plot_color);
             end
             plot(d.center(1), d.center(2), 'xr');
+        end
+        
+        function rotated = getRotated(d, step)
+            if step >= size(d.spokes, 1)
+                error('Step too large - not enough spokes in this descriptor.')
+            end
+            rotated = d;
+%             rotated.spokes = [d
         end
     end
 end
