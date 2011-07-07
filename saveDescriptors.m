@@ -16,6 +16,9 @@ function saveDescriptors()
 
         % overall number of descriptors to find equals the number of pixels
         descrs = repmat(PenumbraDescriptor(), size(cat(1, pixels_s{:,sc}), 1), 1);
+        
+        % each row in below matrix will contain a (len*2)*(2*n_angles) vector
+        % representing all spokes of one descriptor
         descrs_vectors = zeros(length(descrs), 2*n_angles*2*scales(sc));
 
         curr_descr = 1;

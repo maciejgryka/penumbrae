@@ -3,7 +3,7 @@ function [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepare
     default_file_ext = 'png';
     default_training_dir = 'python/output/';
     
-    n_angles = 2;
+    n_angles = 4;
 %     scales = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100];
     scales = [5, 10, 20];
     
