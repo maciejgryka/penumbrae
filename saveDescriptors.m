@@ -14,7 +14,7 @@ function saveDescriptors()
             len = scales(sc) - prev_scales_sum;
         end
 
-        % overall number of descriptors to find equals the number of pixels
+        % overall number of descriptors to find equals the number of penumbra pixels
         descrs = repmat(PenumbraDescriptor(), size(cat(1, pixels_s{:,sc}), 1), 1);
         
         % each row in below matrix will contain a (len*2)*(2*n_angles) vector
@@ -46,7 +46,7 @@ function saveDescriptors()
         
         spokes_all = (spokes_all - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
-        % create separate array for each spoke in [1, 2, ..., 2*n_angles]
+        % create separate array for each spoke direction in [1, 2, ..., 2*n_angles]
         spokes = cell(2*n_angles, 1);
         for sa = 1:2*n_angles
             spokes{sa} = spokes_all(sa:2*n_angles:length(spokes_all), :);

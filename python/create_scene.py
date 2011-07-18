@@ -105,7 +105,7 @@ disconnectAttr(groundPlane[0].getShape().instObjGroups[0],
 
 for tex_name in tex_names:
     connectGroundPlaneToShader(tex_name)
-    out_im = os.path.join('/', current_folder, 'output_straight', tex_name)
+    out_im = os.path.join('/', current_folder, 'output_random', tex_name)
 
     # render shadow image
     castShadow(True)

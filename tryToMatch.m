@@ -1,7 +1,7 @@
 function tryToMatch()
     [shads noshads mattes masks masks_s pixels_s n_angles scales] = prepareEnv('images/2011-07-04/test/', 'png');
     
-    k = 5;
+    k = 10;
     
     shad = shads{1};
     
@@ -36,6 +36,9 @@ function tryToMatch()
 
         fprintf('\tloading/calculating descriptors...\n');
 
+        % debugging variable:
+        %   1 to recompute descriptors in shadow image, 
+        %   0 to load from disk
         compute_c_descrs = 1;
         if compute_c_descrs
             % current (test) descriptors
@@ -54,6 +57,7 @@ function tryToMatch()
         n_spokes = size(c_spokes_all,1);
         c_spokes_all = (c_spokes_all - repmat(spokes_mu, n_spokes, 1))./repmat(spokes_std, n_spokes, 1);
         
+        % create separate array for each spoke direction in [1, 2, ..., 2*n_angles]
         c_spokes = cell(2*n_angles, 1);
         for sa = 1:2*n_angles
             c_spokes{sa} = c_spokes_all(sa:2*n_angles:length(c_spokes_all), :);
@@ -73,11 +77,12 @@ function tryToMatch()
 %             c_spokes_all = c_spokes_all(:,size(c_spokes_all,2)/2:size(c_spokes_all,2));
             
         fprintf('\tfinding nearest neighbors...\n');
+        best_spokes = cell(2*n_angles, 1);
         best_descrs = cell(2*n_angles, 1);
         recovered_matte = ones(100, 100, 2*n_angles);
         for sp = 1:2*n_angles
-            best_descrs{sp} = knnsearch(spokes{sp},c_spokes{sp},'K', k, 'NSMethod', 'kdtree');
-            best_descrs{sp} = getBestDescrs(best_descrs{sp}, descrs_vectors(best_descrs{sp}, :), c_spokes_all, k);
+            best_spokes{sp} = knnsearch(spokes{sp},c_spokes{sp},'K', k, 'NSMethod', 'kdtree');
+            best_descrs{sp} = getBestDescrs(best_spokes{sp}, descrs_vectors(best_spokes{sp}, :), c_spokes_all, k);
             
             rm = recovered_matte(:,:,sp);
             rm(sub2ind(size(shad), pixel_s(:,2), pixel_s(:,1))) = cat(1, descrs(best_descrs{sp}).center_pixel);
@@ -101,15 +106,16 @@ function tryToMatch()
     end
 end
 
-function best_descrs = getBestDescrs(best_descrs, descrs_vectors, c_spokes_all, k)
+% gets best descriptors given best spokes
+function best_descrs = getBestDescrs(best_spokes, descrs_vectors, c_spokes_all, k)
     c_descr_vectors = reshape(c_spokes_all', size(descrs_vectors, 2), [])';
 
     cdvi = repmat(1:size(c_descr_vectors,1), k, 1); % c_descr_vector indices
     c_descr_vectors = c_descr_vectors(cdvi(:), :);
     d = sum((c_descr_vectors - descrs_vectors).^2, 2); % distance from each test descriptor to its k nn
     d = reshape(d', k, [])';
-    [val inds] = min(d, [], 2);  % inds are column indices for best descriptor in each row of best_descrs{sp}
-    subs = [(1:size(best_descrs,1))' inds]; % turn column indices into subscripts
+    [vals inds] = min(d, [], 2);  % inds are column indices for best descriptor in each row of best_descrs{sp}
+    subs = [(1:size(best_spokes,1))' inds]; % turn column indices into subscripts
     inds = sub2ind(size(d), subs(:,1), subs(:,2)); % proper indices
-    best_descrs = best_descrs(inds); % list if best descriptors for each spoke
+    best_descrs = best_spokes(inds); % list if best descriptors for each spoke
 end
